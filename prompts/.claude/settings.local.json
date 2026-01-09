@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\\\Users\\\\JUN\\\\my-first-project\\\\book-writing-ai\\\\prompts\" /S /B)",
+      "Bash(findstr:*)",
+      "Bash(powershell -Command \"Get-Content ''c:\\\\Users\\\\JUN\\\\Documents\\\\Obsidian Vault\\\\《공부는 나를 다시 살게 했다》.md'' | Select-String ''^#[0-9]'' | Select-Object -First 50\")",
+      "Bash(powershell:*)",
+      "Bash(dir /B:*)",
+      "Bash(where:*)",
+      "Bash(pip install:*)",
+      "Bash(python convert_to_pdf.py:*)",
+      "Bash(python md_to_pdf_simple.py:*)",
+      "Bash(dir:*)",
+      "Bash(ls:*)",
+      "Bash(python cleanup_script.py:*)",
+      "Bash(python cleanup_script2.py:*)",
+      "Bash(python cleanup_script3.py:*)",
+      "Bash(python cleanup_script_final.py:*)",
+      "Bash(python md_to_pdf_optimized.py:*)",
+      "Bash(python:*)",
+      "Bash(if [ ! -f .env ])",
+      "Bash(then cp .env.example .env)",
+      "Bash(else echo \".env 파일 이미 존재\")",
+      "Bash(fi)",
+      "Bash(if [ -f .env ])",
+      "Bash(then grep ANTHROPIC_API_KEY .env)",
+      "Bash(curl:*)",
+      "WebSearch",
+      "WebFetch(domain:product.kyobobook.co.kr)",
+      "Bash(git rev-parse:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

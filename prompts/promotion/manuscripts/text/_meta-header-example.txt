@@ -1,0 +1,11 @@
+Title: 
+Section: 
+Source file: 
+Version: v1
+Date: YYYY-MM-DD
+Range: e.g., Chapter 1, pp. 1-10
+Conversion notes: (tool/method used, any OCR issues)
+
+--- Begin Text ---
+
+

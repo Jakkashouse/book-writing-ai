@@ -1,0 +1,64 @@
+name: Deploy MD to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.md'
+      - '.github/workflows/deploy.yml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install -g markdown-to-html-cli
+
+      - name: Create output directory
+        run: mkdir -p dist
+
+      - name: Convert MD to HTML
+        run: |
+          for file in $(find . -name "*.md" -not -path "./node_modules/*" -not -path "./.git/*"); do
+            dir=$(dirname "$file" | sed 's|^\./||')
+            filename=$(basename "$file" .md)
+            mkdir -p "dist/$dir"
+            markdown-to-html --source "$file" --output "dist/$dir/$filename.html"
+          done
+
+      - name: Generate index
+        run: |
+          echo "<html><head><meta charset='utf-8'><title>Book Writing AI Prompts</title><style>body{font-family:sans-serif;max-width:800px;margin:0 auto;padding:20px}a{display:block;margin:5px 0}</style></head><body><h1>Book Writing AI Prompts</h1><ul>" > dist/index.html
+          for file in $(find dist -name "*.html" -not -name "index.html" | sort); do
+            name=$(echo "$file" | sed 's|dist/||' | sed 's|.html$||')
+            echo "<li><a href='${file#dist/}'>$name</a></li>" >> dist/index.html
+          done
+          echo "</ul></body></html>" >> dist/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

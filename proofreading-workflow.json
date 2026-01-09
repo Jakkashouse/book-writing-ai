@@ -1,0 +1,205 @@
+{
+  "name": "AI 교정&탈고 시스템",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "proofreading",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook - 초고 업로드",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "당신은 20년 경력의 전문 편집자입니다. 원고의 맞춤법, 문체, 가독성을 꼼꼼히 검사하고 구체적인 수정안을 제시합니다."
+            },
+            {
+              "role": "user",
+              "content": "=원고:\n{{ $json.body.text }}\n\n위 원고를 다음 기준으로 검사하고 상세한 수정 리포트를 작성해주세요.\n\n**검사 항목:**\n\n## 📋 AI 교정&탈고 리포트\n\n### 1. 맞춤법 검사\n**오류 찾음:** (찾은 오류 개수)\n- 오류 1: \"원문\" → \"수정안\"\n- 오류 2: \"원문\" → \"수정안\"\n- ...\n\n### 2. 띄어쓰기 & 문법\n**오류 찾음:** (찾은 오류 개수)\n- 오류 1: \"원문\" → \"수정안\"\n- ...\n\n### 3. 문체 & 톤\n**개선점:**\n- 어조가 일관되지 않은 부분 (표시하고 수정안 제시)\n- 어려운 문장 (평이하게 수정)\n- 반복되는 표현 (다양하게 수정)\n\n### 4. 가독성 점수\n- **점수:** X/10\n- **평가:** \n- **주요 개선점:**\n  1. ...\n  2. ...\n  3. ...\n\n### 5. 논리 흐름 검토\n- 문장 간 연결이 자연스러운가?\n- 주장과 근거가 일치하는가?\n- 개선 필요 부분:\n  1. ...\n  2. ...\n\n### 6. 구체성 & 명확성\n- 추상적인 표현을 구체적으로 수정\n- 애매한 표현을 명확하게 수정\n\n### 7. 최종 평가\n- ✅ 강점: \n- ⚠️ 보완점: \n- 💡 종합 점수: X/10\n\n---\n\n**수정 원칙:**\n- 원문의 의미는 유지하면서 개선\n- 작가의 개성은 살리기\n- 명확성과 가독성 우선\n- 구체적인 수정안 제시 필수"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.6
+        }
+      },
+      "id": "openai-proofreading",
+      "name": "OpenAI - 교정 검사",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "1",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "당신은 베스트셀러 작가의 에이전트입니다. 위의 교정 리포트를 바탕으로 원고를 완전히 다시 작성(탈고)합니다. 가독성, 전개, 임팩트를 최대화합니다."
+            },
+            {
+              "role": "user",
+              "content": "=원본 원고:\n{{ $json.body.text }}\n\n=교정 리포트:\n{{ $node['OpenAI - 교정 검사'].json.choices[0].message.content }}\n\n위 교정 리포트를 참고하여 원고를 완전히 탈고(재작성)해주세요.\n\n**탈고 기준:**\n1. 모든 맞춤법, 띄어쓰기 오류 수정\n2. 어색한 표현을 자연스럽게\n3. 길고 복잡한 문장을 간결하게\n4. 논리 흐름을 명확하게\n5. 임팩트 있는 표현으로 개선\n6. 반복되는 표현 다양화\n7. 호흡 좋은 문장으로\n\n**중요:** 원본의 의미와 개성은 유지하면서, 전문가 수준의 글로 업그레이드하기\n\n---\n\n## 📝 탈고 완성본\n\n[원고를 완전히 재작성해주세요]"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "openai-revision",
+      "name": "OpenAI - 탈고",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "1",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "구글 시트 ID",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "교정탈고 결과",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "이름": "={{ $node['Webhook - 초고 업로드'].json.body.name }}",
+            "이메일": "={{ $node['Webhook - 초고 업로드'].json.body.email }}",
+            "제목": "={{ $node['Webhook - 초고 업로드'].json.body.title }}",
+            "원본 원고": "={{ $node['Webhook - 초고 업로드'].json.body.text }}",
+            "교정 리포트": "={{ $node['OpenAI - 교정 검사'].json.choices[0].message.content }}",
+            "탈고 완성본": "={{ $node['OpenAI - 탈고'].json.choices[0].message.content }}",
+            "생성일시": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}"
+          }
+        }
+      },
+      "id": "sheets",
+      "name": "Google Sheets - 저장",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [850, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $node['Webhook - 초고 업로드'].json.body.email }}",
+        "subject": "=📝 {{ $node['Webhook - 초고 업로드'].json.body.name }}님의 원고 교정&탈고가 완료되었습니다!",
+        "emailType": "html",
+        "message": "=<html>\n<head>\n  <style>\n    body { font-family: 'Noto Sans KR', sans-serif; background: #FFFCF7; padding: 20px; }\n    .container { max-width: 650px; margin: 0 auto; background: white; border-radius: 16px; padding: 40px; }\n    h1 { color: #C75B39; font-size: 28px; margin-bottom: 20px; }\n    h2 { color: #E8A849; font-size: 22px; margin-top: 32px; margin-bottom: 16px; }\n    .box { background: #FFF5E6; padding: 20px; border-radius: 12px; border-left: 4px solid #E8A849; margin: 20px 0; }\n    pre { background: #f5f5f5; padding: 16px; border-radius: 8px; white-space: pre-wrap; line-height: 1.8; font-size: 15px; }\n    .cta { display: inline-block; background: linear-gradient(135deg, #E8A849 0%, #D4942E 100%); color: white; padding: 16px 40px; border-radius: 40px; text-decoration: none; font-weight: 700; margin-top: 24px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>📝 축하합니다, {{ $node['Webhook - 초고 업로드'].json.body.name }}님!</h1>\n    \n    <p><strong>『{{ $node['Webhook - 초고 업로드'].json.body.title }}』</strong> 원고의 교정&탈고가 완료되었습니다!</p>\n    \n    <div class=\"box\">\n      <strong>📖 작업 정보:</strong><br>\n      • 제목: {{ $node['Webhook - 초고 업로드'].json.body.title }}<br>\n      • 작가: {{ $node['Webhook - 초고 업로드'].json.body.name }}<br>\n      • 원고 길이: {{ $node['Webhook - 초고 업로드'].json.body.text.length }} 자\n    </div>\n    \n    <h2>🔍 교정 검사 리포트</h2>\n    <pre>{{ $node['OpenAI - 교정 검사'].json.choices[0].message.content }}</pre>\n    \n    <h2>✨ 탈고 완성본</h2>\n    <pre>{{ $node['OpenAI - 탈고'].json.choices[0].message.content }}</pre>\n    \n    <div class=\"box\">\n      <strong>💡 다음 단계:</strong><br>\n      완성된 원고는 이제 출판사 제출, 블로그 게시, SNS 콘텐츠로 바로 활용할 수 있습니다!<br><br>\n      \n      <strong>다음에 할 수 있는 작업:</strong><br>\n      ✅ SNS 콘텐츠 변환 (블로그/인스타/유튜브 등 7가지 포맷)<br>\n      ✅ 표지 디자인<br>\n      ✅ 최종 검수<br><br>\n      \n      <a href=\"http://localhost:5678/dashboard.html\" class=\"cta\">전체 자동화 시스템 보기 →</a>\n    </div>\n    \n    <p style=\"margin-top: 40px; color: #8A8580; font-size: 14px;\">\n      감사합니다.<br>\n      <strong>작가의집 AI 시스템</strong>\n    </p>\n  </div>\n</body>\n</html>"
+      },
+      "id": "gmail",
+      "name": "Gmail - 결과 발송",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1050, 300],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3",
+          "name": "Gmail OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"message\": \"원고 교정&탈고가 완료되었습니다!\",\n  \"data\": {\n    \"title\": $node['Webhook - 초고 업로드'].json.body.title,\n    \"proofreading\": $node['OpenAI - 교정 검사'].json.choices[0].message.content,\n    \"revised\": $node['OpenAI - 탈고'].json.choices[0].message.content\n  }\n} }}"
+      },
+      "id": "response",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - 초고 업로드": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - 교정 검사",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - 교정 검사": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - 탈고",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - 탈고": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - 저장",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - 저장": {
+      "main": [
+        [
+          {
+            "node": "Gmail - 결과 발송",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - 결과 발송": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>책쓰기 코칭 자동화</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: #f5f7fa;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        color: #4f46e5;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        color: #6b7280;
+        font-size: 14px;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .tab {
+        padding: 12px 24px;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .tab.active {
+        background: #4f46e5;
+        color: white;
+        border-color: #4f46e5;
+      }
+
+      .tab:hover {
+        border-color: #4f46e5;
+      }
+
+      .tab-content {
+        display: none;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #374151;
+      }
+
+      textarea,
+      input[type="text"],
+      input[type="number"] {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+      }
+
+      textarea {
+        min-height: 200px;
+        resize: vertical;
+      }
+
+      button {
+        background: #4f46e5;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      button:hover {
+        background: #4338ca;
+      }
+
+      button:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+      }
+
+      .result-box {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        display: none;
+      }
+
+      .result-box.show {
+        display: block;
+      }
+
+      .result-box h3 {
+        color: #4f46e5;
+        margin-bottom: 15px;
+      }
+
+      .result-box pre {
+        background: white;
+        padding: 15px;
+        border-radius: 4px;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+        color: #6b7280;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      .spinner {
+        border: 3px solid #f3f4f6;
+        border-top: 3px solid #4f46e5;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .info-box {
+        background: #eff6ff;
+        border-left: 4px solid #4f46e5;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+      }
+
+      .info-box p {
+        margin: 5px 0;
+        color: #1e40af;
+        font-size: 14px;
+      }
+
+      .sample-text {
+        font-size: 12px;
+        color: #6b7280;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>📚 책쓰기 코칭 자동화 시스템</h1>
+        <p class="subtitle">주 1권 출판을 위한 AI 자동화 솔루션</p>
+      </header>
+
+      <div class="tabs">
+        <div class="tab active" onclick="showTab('consultation')">
+          1. 컨설팅지 분석
+        </div>
+        <div class="tab" onclick="showTab('draft')">2. 초안 작성</div>
+        <div class="tab" onclick="showTab('feedback')">3. 피드백 생성</div>
+      </div>
+
+      <!-- 탭 1: 컨설팅지 분석 -->
+      <div id="consultation" class="tab-content active">
+        <div class="info-box">
+          <p><strong>🎯 기능:</strong> 컨설팅지 → 3가지 주제 + 각 40개 목차 자동 생성</p>
+          <p><strong>⏱️ 소요 시간:</strong> 약 2-3분</p>
+        </div>
+
+        <div class="form-group">
+          <label for="project-id">프로젝트 ID</label>
+          <input
+            type="number"
+            id="project-id"
+            value="1"
+            placeholder="프로젝트 ID 입력"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="consultation-text">컨설팅지 내용</label>
+          <textarea
+            id="consultation-text"
+            placeholder="작가님의 컨설팅지 내용을 입력하세요...
+
+예시:
+작가: 김미소
+직업: 초등학교 교사 10년차
+전문성: 예민한 아이 육아 전문
+독자: 예민한 아이를 키우는 부모
+메시지: 예민함은 약점이 아니라 강점이다
+..."
+          ></textarea>
+          <p class="sample-text">
+            💡 Tip: examples/sample-consultation.txt 내용을 복사해서 붙여넣으세요!
+          </p>
+        </div>
+
+        <button onclick="analyzeConsultation()">컨설팅지 분석 시작</button>
+
+        <div class="loading" id="consultation-loading">
+          <div class="spinner"></div>
+          <p>AI가 컨설팅지를 분석하고 있습니다...</p>
+        </div>
+
+        <div class="result-box" id="consultation-result">
+          <h3>✨ 분석 결과</h3>
+          <pre id="consultation-output"></pre>
+        </div>
+      </div>
+
+      <!-- 탭 2: 초안 작성 -->
+      <div id="draft" class="tab-content">
+        <div class="info-box">
+          <p><strong>🎯 기능:</strong> 작가 스타일로 4,000자 초안 자동 작성</p>
+          <p><strong>⏱️ 소요 시간:</strong> 약 2-3분</p>
+        </div>
+
+        <div class="form-group">
+          <label for="chapter-id">장 ID</label>
+          <input type="number" id="chapter-id" value="1" placeholder="장 ID 입력" />
+        </div>
+
+        <button onclick="generateDraft()">AI 초안 생성</button>
+
+        <div class="loading" id="draft-loading">
+          <div class="spinner"></div>
+          <p>AI가 작가님 스타일로 초안을 작성하고 있습니다...</p>
+        </div>
+
+        <div class="result-box" id="draft-result">
+          <h3>✨ 생성된 초안</h3>
+          <pre id="draft-output"></pre>
+        </div>
+
+        <div style="margin-top: 40px">
+          <h3>작가 초안 업로드</h3>
+          <div class="form-group" style="margin-top: 20px">
+            <label for="writer-draft">작가님이 직접 쓴 초안</label>
+            <textarea
+              id="writer-draft"
+              placeholder="작성하신 초안을 입력하세요..."
+            ></textarea>
+          </div>
+          <button onclick="uploadWriterDraft()">작가 초안 업로드</button>
+        </div>
+      </div>
+
+      <!-- 탭 3: 피드백 생성 -->
+      <div id="feedback" class="tab-content">
+        <div class="info-box">
+          <p><strong>🎯 기능:</strong> 100점 만점 평가 + 구체적 개선안 생성</p>
+          <p><strong>⏱️ 소요 시간:</strong> 약 1-2분</p>
+        </div>
+
+        <div class="form-group">
+          <label for="feedback-chapter-id">장 ID</label>
+          <input
+            type="number"
+            id="feedback-chapter-id"
+            value="1"
+            placeholder="장 ID 입력"
+          />
+        </div>
+
+        <button onclick="generateFeedback()">AI 피드백 생성</button>
+
+        <div class="loading" id="feedback-loading">
+          <div class="spinner"></div>
+          <p>AI가 초안을 분석하고 피드백을 생성하고 있습니다...</p>
+        </div>
+
+        <div class="result-box" id="feedback-result">
+          <h3>💬 생성된 피드백</h3>
+          <pre id="feedback-output"></pre>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = "http://localhost:8000/api/v1";
+
+      // 탭 전환
+      function showTab(tabName) {
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((c) => c.classList.remove("active"));
+
+        event.target.classList.add("active");
+        document.getElementById(tabName).classList.add("active");
+      }
+
+      // 1. 컨설팅지 분석
+      async function analyzeConsultation() {
+        const projectId = document.getElementById("project-id").value;
+        const text = document.getElementById("consultation-text").value;
+
+        if (!text.trim()) {
+          alert("컨설팅지 내용을 입력해주세요");
+          return;
+        }
+
+        // 로딩 표시
+        document.getElementById("consultation-loading").classList.add("show");
+        document.getElementById("consultation-result").classList.remove("show");
+
+        try {
+          const formData = new FormData();
+          formData.append("project_id", projectId);
+          formData.append("text_content", text);
+
+          const response = await fetch(`${API_BASE}/consultations/upload`, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          // 결과 표시
+          document.getElementById("consultation-output").textContent =
+            JSON.stringify(data, null, 2);
+          document.getElementById("consultation-result").classList.add("show");
+        } catch (error) {
+          alert(`오류 발생: ${error.message}`);
+        } finally {
+          document.getElementById("consultation-loading").classList.remove("show");
+        }
+      }
+
+      // 2. AI 초안 생성
+      async function generateDraft() {
+        const chapterId = document.getElementById("chapter-id").value;
+
+        document.getElementById("draft-loading").classList.add("show");
+        document.getElementById("draft-result").classList.remove("show");
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/chapters/${chapterId}/generate-draft`,
+            {
+              method: "POST",
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          document.getElementById("draft-output").textContent = data.draft || JSON.stringify(data, null, 2);
+          document.getElementById("draft-result").classList.add("show");
+        } catch (error) {
+          alert(`오류 발생: ${error.message}`);
+        } finally {
+          document.getElementById("draft-loading").classList.remove("show");
+        }
+      }
+
+      // 3. 작가 초안 업로드
+      async function uploadWriterDraft() {
+        const chapterId = document.getElementById("chapter-id").value;
+        const content = document.getElementById("writer-draft").value;
+
+        if (!content.trim()) {
+          alert("작가 초안을 입력해주세요");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/chapters/${chapterId}/upload?content=${encodeURIComponent(
+              content
+            )}`,
+            {
+              method: "POST",
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          alert("작가 초안이 업로드되었습니다!");
+        } catch (error) {
+          alert(`오류 발생: ${error.message}`);
+        }
+      }
+
+      // 4. 피드백 생성
+      async function generateFeedback() {
+        const chapterId = document.getElementById("feedback-chapter-id").value;
+
+        document.getElementById("feedback-loading").classList.add("show");
+        document.getElementById("feedback-result").classList.remove("show");
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/chapters/${chapterId}/feedback`,
+            {
+              method: "POST",
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          document.getElementById("feedback-output").textContent =
+            data.feedback?.full_feedback || JSON.stringify(data, null, 2);
+          document.getElementById("feedback-result").classList.add("show");
+        } catch (error) {
+          alert(`오류 발생: ${error.message}`);
+        } finally {
+          document.getElementById("feedback-loading").classList.remove("show");
+        }
+      }
+    </script>
+  </body>
+</html>

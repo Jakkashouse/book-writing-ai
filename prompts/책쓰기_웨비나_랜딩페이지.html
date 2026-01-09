@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>29년 못 쓴 사람도 2달 만에 출간 | 6주 책쓰기 완성 프로그램</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #E8A849;
+            --primary-dark: #D4942E;
+            --primary-light: #FFF5E6;
+            --accent: #C75B39;
+            --text-dark: #2D2A26;
+            --text-medium: #5A554E;
+            --text-light: #8A8580;
+            --bg-cream: #FFFCF7;
+            --bg-warm: #FDF8F2;
+            --white: #FFFFFF;
+            --success: #4A9B7F;
+            --shadow: 0 4px 20px rgba(45, 42, 38, 0.08);
+            --shadow-lg: 0 12px 40px rgba(45, 42, 38, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg-cream);
+            color: var(--text-dark);
+            line-height: 1.8;
+            font-size: 18px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(180deg, var(--bg-warm) 0%, var(--bg-cream) 100%);
+            padding: 80px 0 100px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(232, 168, 73, 0.08) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-quote {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 36px;
+            line-height: 1.6;
+            color: var(--text-dark);
+            margin-bottom: 48px;
+            animation: fadeInUp 0.8s ease-out;
+            font-weight: 700;
+        }
+
+        .hero-quote .highlight {
+            color: var(--accent);
+            display: block;
+            font-size: 42px;
+            margin-top: 16px;
+        }
+
+        .hero-proof {
+            font-size: 22px;
+            color: var(--text-medium);
+            margin-bottom: 56px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+            line-height: 1.8;
+            background: var(--white);
+            padding: 32px;
+            border-radius: 16px;
+            border-left: 5px solid var(--primary);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Authority Section */
+        .authority {
+            background: var(--white);
+            padding: 80px 0;
+            border-top: 1px solid rgba(232, 168, 73, 0.2);
+            border-bottom: 1px solid rgba(232, 168, 73, 0.2);
+        }
+
+        .section-title {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 56px;
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+
+        .authority-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 48px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 32px 20px;
+            background: var(--bg-warm);
+            border-radius: 16px;
+        }
+
+        .stat-number {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--primary-dark);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 17px;
+            color: var(--text-light);
+            margin-top: 8px;
+        }
+
+        /* Value Box */
+        .value-box {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-warm) 100%);
+            border: 3px solid var(--primary);
+            border-radius: 24px;
+            padding: 48px 40px;
+            margin: 48px 0;
+            text-align: center;
+        }
+
+        .value-box h3 {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 28px;
+            color: var(--accent);
+            margin-bottom: 32px;
+            font-weight: 900;
+        }
+
+        .value-box p {
+            font-size: 20px;
+            line-height: 2;
+            color: var(--text-dark);
+        }
+
+        .value-box .emphasis {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--primary-dark);
+            display: block;
+            margin: 24px 0;
+        }
+
+        /* Week Section */
+        .week-section {
+            background: var(--white);
+            padding: 100px 0;
+        }
+
+        .week-card {
+            background: var(--bg-warm);
+            border-radius: 24px;
+            padding: 48px;
+            margin-bottom: 40px;
+            border-left: 6px solid var(--primary);
+        }
+
+        .week-header {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 28px;
+            color: var(--text-dark);
+            margin-bottom: 32px;
+            font-weight: 700;
+        }
+
+        .week-item {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .week-item h4 {
+            font-size: 22px;
+            color: var(--accent);
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .week-item .subtitle {
+            font-style: italic;
+            color: var(--text-medium);
+            font-size: 18px;
+            margin-bottom: 24px;
+        }
+
+        .week-item ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .week-item li {
+            padding: 8px 0;
+            padding-left: 28px;
+            position: relative;
+            font-size: 17px;
+            color: var(--text-medium);
+        }
+
+        .week-item li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: 900;
+        }
+
+        .value-tag {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--white);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 16px;
+        }
+
+        /* Before/After Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 32px 0;
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 16px;
+            text-align: center;
+            font-size: 17px;
+        }
+
+        .comparison-table th {
+            background: var(--text-dark);
+            color: var(--white);
+            font-weight: 700;
+        }
+
+        .comparison-table .before-col {
+            background: #f5f5f5;
+            color: #999;
+        }
+
+        .comparison-table .after-col {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        /* Testimonial Section */
+        .testimonial {
+            background: var(--text-dark);
+            color: var(--white);
+            padding: 64px 48px;
+            border-radius: 24px;
+            text-align: center;
+            margin: 80px 0;
+        }
+
+        .testimonial p {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 24px;
+            line-height: 2;
+            margin-bottom: 24px;
+        }
+
+        .testimonial .author {
+            font-size: 18px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Price Section */
+        .price-section {
+            background: linear-gradient(180deg, var(--bg-warm) 0%, var(--primary-light) 100%);
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .price-card {
+            background: var(--white);
+            border: 4px solid var(--primary);
+            border-radius: 32px;
+            padding: 56px 48px;
+            max-width: 560px;
+            margin: 0 auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .price-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--white);
+            padding: 12px 32px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 32px;
+        }
+
+        .price-original {
+            font-size: 24px;
+            color: var(--text-light);
+            text-decoration: line-through;
+            margin-bottom: 16px;
+        }
+
+        .price-current {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 52px;
+            font-weight: 900;
+            color: var(--primary-dark);
+            margin-bottom: 32px;
+        }
+
+        .price-benefits {
+            list-style: none;
+            text-align: left;
+            margin: 32px 0;
+        }
+
+        .price-benefits li {
+            padding: 12px 0;
+            padding-left: 36px;
+            position: relative;
+            font-size: 18px;
+            color: var(--text-medium);
+        }
+
+        .price-benefits li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: 900;
+            font-size: 20px;
+        }
+
+        /* CTA Button */
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 26px 56px;
+            border-radius: 60px;
+            font-size: 24px;
+            font-weight: 900;
+            text-decoration: none;
+            box-shadow: 0 8px 30px rgba(232, 168, 73, 0.4);
+            transition: all 0.3s ease;
+            margin: 24px 0;
+            cursor: pointer;
+            border: none;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(232, 168, 73, 0.5);
+        }
+
+        .cta-button.secondary {
+            background: var(--white);
+            color: var(--primary-dark);
+            border: 3px solid var(--primary);
+        }
+
+        /* Guarantee Section */
+        .guarantee {
+            background: var(--success);
+            color: var(--white);
+            padding: 48px;
+            border-radius: 24px;
+            text-align: center;
+            margin: 48px 0;
+        }
+
+        .guarantee h3 {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 32px;
+            margin-bottom: 24px;
+            font-weight: 900;
+        }
+
+        .guarantee p {
+            font-size: 20px;
+            line-height: 1.8;
+        }
+
+        /* Urgency Box */
+        .urgency {
+            background: linear-gradient(135deg, #FFE8E8 0%, #FFD4D4 100%);
+            border: 3px solid var(--accent);
+            border-radius: 24px;
+            padding: 48px;
+            margin: 48px 0;
+            text-align: center;
+        }
+
+        .urgency h3 {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 28px;
+            color: var(--accent);
+            margin-bottom: 32px;
+            font-weight: 900;
+        }
+
+        .urgency-item {
+            background: var(--white);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .urgency-item h4 {
+            color: var(--accent);
+            font-size: 20px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .urgency-item p {
+            color: var(--text-dark);
+            font-size: 17px;
+            line-height: 1.6;
+        }
+
+        /* FAQ Section */
+        .faq {
+            background: var(--white);
+            padding: 100px 0;
+        }
+
+        .faq-item {
+            background: var(--bg-warm);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .faq-question {
+            font-size: 22px;
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .faq-answer {
+            font-size: 18px;
+            color: var(--text-medium);
+            line-height: 1.8;
+        }
+
+        .faq-answer .highlight {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* Footer CTA */
+        .footer-cta {
+            background: linear-gradient(180deg, var(--text-dark) 0%, #1a1816 100%);
+            color: var(--white);
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .footer-cta h2 {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 36px;
+            margin-bottom: 48px;
+            font-weight: 700;
+        }
+
+        .footer-cta .countdown {
+            font-size: 28px;
+            color: var(--primary);
+            margin-bottom: 40px;
+            font-weight: 900;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-quote {
+                font-size: 28px;
+            }
+
+            .hero-quote .highlight {
+                font-size: 32px;
+            }
+
+            .section-title {
+                font-size: 26px;
+            }
+
+            .authority-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .week-card {
+                padding: 32px 24px;
+            }
+
+            .price-current {
+                font-size: 40px;
+            }
+
+            .cta-button {
+                padding: 20px 40px;
+                font-size: 20px;
+            }
+
+            /* 패키지 그리드를 모바일에서 1열로 */
+            .price-section [style*="grid-template-columns: repeat(2, 1fr)"] {
+                display: block !important;
+            }
+
+            .price-section [style*="grid-template-columns: repeat(2, 1fr)"] > div {
+                margin-bottom: 24px;
+            }
+
+            /* 비교 섹션도 1열로 */
+            .footer-cta [style*="grid-template-columns: 1fr 1fr"] {
+                display: block !important;
+            }
+
+            .footer-cta [style*="grid-template-columns: 1fr 1fr"] > div {
+                margin-bottom: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-quote">
+                    29년 못 쓴 사람도
+                    <span class="highlight">2달 만에 출간했습니다</span>
+                </h1>
+                <div class="hero-proof">
+                    <p>박○○님 (45세): "27년째 책쓰기 포기 → 코칭 받고 3주 만에 초고 완성 → 2달 만에 출간"</p>
+                    <p style="font-weight: 900; color: var(--accent); margin-top: 24px;">당신도 됩니다. 지금 증명합니다.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Authority Section -->
+    <section class="authority">
+        <div class="container">
+            <h2 class="section-title">데이터가 증명합니다</h2>
+            <div class="authority-stats">
+                <div class="stat-item">
+                    <span class="stat-number">99%</span>
+                    <p class="stat-label">출간률 (딱 1명 제외)</p>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">100%</span>
+                    <p class="stat-label">출판사 계약률</p>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">1,200만원</span>
+                    <p class="stat-label">1년 만에 연 수익<br><small style="font-size: 14px;">(누구나 가능)</small></p>
+                </div>
+            </div>
+
+            <div class="value-box" style="margin-top: 64px;">
+                <h3>6주 동안 뭘 받는데요?</h3>
+                <p>원칙: <span style="color: var(--accent); font-weight: 900;">"이거 하나만 받아도 본전"</span></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Week 1 -->
+    <section class="week-section">
+        <div class="container">
+            <h2 class="section-title">6주 커리큘럼</h2>
+
+            <div class="week-card">
+                <h3 class="week-header">1주차: "27년 실패한 사람들의 공통점 - 제목이 전부였습니다"</h3>
+
+                <div class="week-item">
+                    <h4>출판사가 바로 계약하는 제목 공식 10가지</h4>
+                    <p class="subtitle">"3년 묵힌 원고, 제목과 목차만 바꿨는데 당일 계약 - 출판사 편집장이 인정한 제목의 힘"</p>
+
+                    <table class="comparison-table">
+                        <tr>
+                            <th class="before-col">Before</th>
+                            <th class="after-col">After</th>
+                        </tr>
+                        <tr>
+                            <td class="before-col">"배달 성공법"<br>관심 0%</td>
+                            <td class="after-col">"마흔, 폭풍성장으로<br>부의 추월차선에 타라"<br>계약 제안 3곳</td>
+                        </tr>
+                    </table>
+
+                    <ul>
+                        <li>제목 공식 10가지 워드 템플릿 (복붙만 하면 됨)</li>
+                        <li>오늘 저녁 30분 만에 제목 10개 자동 생성 엑셀 시트</li>
+                        <li>내일 출판사에 보낼 1페이지 기획서 템플릿 (PDF)</li>
+                        <li>실제 합격 제목 50개 사례집 (분야별 분류)</li>
+                        <li>제목 자가 진단 체크리스트 (5분 완성)</li>
+                    </ul>
+                    <span class="value-tag">가치: 출판 컨설팅 1회 50만원 상당</span>
+                </div>
+
+                <div class="week-item">
+                    <h4>1일 만에 완성하는 40꼭지 목차 시스템</h4>
+                    <p class="subtitle">"목차 없는 원고 합격률 0.1% vs 목차 있는 기획서 30% - 300배 차이의 비밀"</p>
+
+                    <table class="comparison-table">
+                        <tr>
+                            <th>방법</th>
+                            <th>합격률</th>
+                        </tr>
+                        <tr>
+                            <td class="before-col">목차 없이 원고만</td>
+                            <td class="before-col">0.1%</td>
+                        </tr>
+                        <tr>
+                            <td class="after-col">목차 + 기획서</td>
+                            <td class="after-col">30%</td>
+                        </tr>
+                    </table>
+
+                    <ul>
+                        <li>Why-What-How-Do-Future 5부 구조 템플릿 (워드/엑셀)</li>
+                        <li>1일 만에 40꼭지 자동 생성 엑셀 시스템 (공식 내장)</li>
+                        <li>"전문가구나" 느끼게 하는 목차 작성 가이드 (20p)</li>
+                        <li>실제 합격 목차 10개 샘플 (분야별)</li>
+                        <li>목차 → 기획서 자동 변환 템플릿</li>
+                    </ul>
+                    <span class="value-tag">가치: 기획서 컨설팅 1회 80만원 상당</span>
+                </div>
+
+                <div class="week-item">
+                    <h4>30분 만에 주제 3개 - '책 DNA' 찾기</h4>
+                    <p class="subtitle">"70대도 30분 만에 찾았습니다 - 당신 안에 책 10권이 잠들어 있습니다"</p>
+
+                    <ul>
+                        <li>3가지 질문 → 주제 자동 추출 워크시트</li>
+                        <li>현재 하는 일 = 책 주제 매핑 테이블</li>
+                        <li>87%가 1시간 내 완료하는 '책 DNA' 발굴 가이드</li>
+                    </ul>
+                    <span class="value-tag">가치: 주제 컨설팅 1회 30만원 상당</span>
+                </div>
+            </div>
+
+            <!-- Week 2 -->
+            <div class="week-card">
+                <h3 class="week-header">2주차: "완벽주의가 책쓰기를 망칩니다 - AI 80% + 나 20% 시스템"</h3>
+
+                <div class="week-item">
+                    <h4>글쓰기 5+5 시스템</h4>
+                    <p class="subtitle">"'육아는 힘들다'(3줄) → '밤 9시 퇴근해서 잠든 아이만 보시나요?'(1,500자)"</p>
+
+                    <table class="comparison-table">
+                        <tr>
+                            <th class="before-col">Before</th>
+                            <th class="after-col">After</th>
+                        </tr>
+                        <tr>
+                            <td class="before-col">"육아는 힘들다"<br>(3줄)</td>
+                            <td class="after-col">"밤 9시 퇴근해서<br>잠든 아이만 보시나요?"<br>(1,500자)</td>
+                        </tr>
+                    </table>
+
+                    <ul>
+                        <li>40꼭지 4주 완성 템플릿</li>
+                        <li>말하듯 쓰면 전문가처럼 보이는 5+5 공식 워크시트</li>
+                        <li>92%가 한 달 내 초고 완성하는 글쓰기 시스템</li>
+                    </ul>
+                    <span class="value-tag">가치: 글쓰기 코칭 1회 70만원 상당</span>
+                </div>
+
+                <div class="week-item">
+                    <h4>AI 프롬프트 7종 (3시간 → 30분)</h4>
+                    <p class="subtitle">"하루 만에 30,000자 완성 - AI 초고 80% + 나 탈고 20%로 완벽주의 탈출"</p>
+
+                    <table class="comparison-table">
+                        <tr>
+                            <th>작업</th>
+                            <th>기존</th>
+                            <th>AI 활용</th>
+                        </tr>
+                        <tr>
+                            <td>전체</td>
+                            <td class="before-col">13.5시간</td>
+                            <td class="after-col">1.5시간</td>
+                        </tr>
+                    </table>
+
+                    <ul>
+                        <li>AI 프롬프트 7종 전체 (복붙만 하면 됨)</li>
+                        <li>각 프롬프트별 사용 가이드 (동영상)</li>
+                        <li>AI 초고 → 탈고 체크리스트</li>
+                    </ul>
+                    <span class="value-tag">가치: AI 글쓰기 컨설팅 1회 100만원 상당</span>
+                </div>
+            </div>
+
+            <!-- Week 3 -->
+            <div class="week-card">
+                <h3 class="week-header">3주차: "원고만 보내면 3개월 후 거절됩니다 - 5분 만에 계약서 받는 기획서"</h3>
+
+                <div class="week-item">
+                    <h4>5분 만에 계약서 받는 기획서</h4>
+                    <p class="subtitle">"원고만 보낸 사람 0.1% vs 기획서 보낸 사람 30% - 일주일 내 연락받는 비결"</p>
+
+                    <div class="testimonial">
+                        <p>"작가가 될 생각조차 못했음 → 출간기획서와 원고 보냄 → 일주일 만에 3곳 연락"</p>
+                        <p class="author">- 박○○님</p>
+                    </div>
+
+                    <ul>
+                        <li>타겟+시장+차별점+목차 기획서 템플릿 (워드)</li>
+                        <li>"왜 지금?" 한 문장 공식 (출판사 편집장 인터뷰 기반)</li>
+                        <li>실제 합격 기획서 5건 (PDF)</li>
+                        <li>기획서 작성 가이드 (30p)</li>
+                    </ul>
+                    <span class="value-tag">가치: 출판 기획서 컨설팅 1회 80만원 상당</span>
+                </div>
+
+                <div class="week-item">
+                    <h4>계약서 체크리스트 (500만원 손해 방지)</h4>
+                    <p class="subtitle">"전자책 권리 몰랐음. 3년간 500만원 못 받음 - 5분 체크가 평생 지킵니다"</p>
+
+                    <ul>
+                        <li>계약서 체크리스트 (5분 완성)</li>
+                        <li>계약 전 질문 7가지 스크립트</li>
+                        <li>실제 계약서 샘플 10건</li>
+                    </ul>
+                    <span class="value-tag">가치: 출판 계약 컨설팅 1회 100만원 상당</span>
+                </div>
+            </div>
+
+            <!-- Week 4 -->
+            <div class="week-card">
+                <h3 class="week-header">4주차: "출간 후 홍보하면 이미 늦습니다 - 출간 전 베스트셀러 만들기"</h3>
+
+                <div class="week-item">
+                    <h4>출간 '전'에 베스트셀러 만들기</h4>
+                    <p class="subtitle">"출간일 100부만 팔아도 = 베스트셀러"</p>
+
+                    <ul>
+                        <li>출간 전 30일 마케팅 타임라인</li>
+                        <li>지인 50명 동원 스크립트</li>
+                        <li>SNS 확산 템플릿 (인스타/블로그)</li>
+                    </ul>
+                    <span class="value-tag">가치: 출간 마케팅 컨설팅 1회 150만원 상당</span>
+                </div>
+
+                <div class="week-item">
+                    <h4>책 → 강의 → 컨설팅 파이프라인</h4>
+                    <p class="subtitle">"강의 20회 × 30만원 + 컨설팅 5건 × 100만원 = 연 1,100만원"</p>
+
+                    <table class="comparison-table">
+                        <tr>
+                            <th>단계</th>
+                            <th>횟수</th>
+                            <th>연 수익</th>
+                        </tr>
+                        <tr>
+                            <td>강의</td>
+                            <td>20회 × 30만원</td>
+                            <td class="after-col">600만원</td>
+                        </tr>
+                        <tr>
+                            <td>컨설팅</td>
+                            <td>5건 × 100만원</td>
+                            <td class="after-col">500만원</td>
+                        </tr>
+                        <tr>
+                            <td><strong>합계</strong></td>
+                            <td></td>
+                            <td class="after-col"><strong>1,100만원</strong></td>
+                        </tr>
+                    </table>
+
+                    <ul>
+                        <li>수익 파이프라인 설계 가이드</li>
+                        <li>강의/컨설팅 가격 책정 가이드</li>
+                        <li>실제 수익 사례 10건 분석</li>
+                    </ul>
+                    <span class="value-tag">가치: 비즈니스 모델 컨설팅 1회 150만원 상당</span>
+                </div>
+            </div>
+
+            <!-- Week 5 -->
+            <div class="week-card">
+                <h3 class="week-header">5주차: "한 번 쓰고 끝내면 손해입니다 - 콘텐츠 7번 재활용 시스템"</h3>
+
+                <div class="week-item">
+                    <h4>콘텐츠 재활용 7단계</h4>
+                    <p class="subtitle">"한 번 쓰면 7번 써먹는다 - 책 1권 = 블로그 40개 + 유튜브 40개 + 강의 + 컨설팅"</p>
+
+                    <ul>
+                        <li>콘텐츠 재활용 7단계 가이드</li>
+                        <li>플랫폼별 변환 템플릿</li>
+                        <li>블로그/유튜브 업로드 스케줄러</li>
+                    </ul>
+                    <span class="value-tag">가치: 콘텐츠 마케팅 컨설팅 1회 100만원 상당</span>
+                </div>
+
+                <div class="week-item">
+                    <h4>웨비나 1회 = 3,000만원</h4>
+                    <p class="subtitle">"참석 100명 × 전환율 10% × 300만원 = 3,000만원 - 웨비나 시스템 전체 공개"</p>
+
+                    <div class="testimonial">
+                        <p>"첫 회에서 1.65억. 10배 벌었어요"</p>
+                        <p class="author">- 최○○님</p>
+                    </div>
+
+                    <ul>
+                        <li>웨비나 스크립트 (90분, 복붙 가능)</li>
+                        <li>PPT 62페이지 (복붙 가능)</li>
+                        <li>랜딩페이지 (HTML/CSS)</li>
+                        <li>웨비나 전환율 높이는 10가지 비법</li>
+                    </ul>
+                    <span class="value-tag">가치: 웨비나 컨설팅 1회 500만원 상당</span>
+                </div>
+            </div>
+
+            <!-- Week 6 -->
+            <div class="week-card">
+                <h3 class="week-header">6주차: "출판사에 의존하면 평생 을입니다 - 1인 출판사 독립 시스템"</h3>
+
+                <div class="week-item">
+                    <h4>실제 원가 공개 (500만원 → 300만원)</h4>
+                    <p class="subtitle">"인쇄 200만원 + ISBN 무료 + 디자인 100만원 = 300만원"</p>
+
+                    <table class="comparison-table">
+                        <tr>
+                            <th>항목</th>
+                            <th>비용</th>
+                        </tr>
+                        <tr>
+                            <td>인쇄 (100부)</td>
+                            <td>200만원</td>
+                        </tr>
+                        <tr>
+                            <td>ISBN</td>
+                            <td class="after-col">무료</td>
+                        </tr>
+                        <tr>
+                            <td>디자인</td>
+                            <td>100만원</td>
+                        </tr>
+                        <tr>
+                            <td><strong>합계</strong></td>
+                            <td class="after-col"><strong>300만원</strong></td>
+                        </tr>
+                    </table>
+
+                    <ul>
+                        <li>1인 출판사 설립 가이드 (A-Z)</li>
+                        <li>인쇄소/디자이너 추천 리스트</li>
+                        <li>ISBN 발급 신청 방법</li>
+                    </ul>
+                    <span class="value-tag">가치: 1인 출판사 컨설팅 1회 300만원 상당</span>
+                </div>
+
+                <div class="week-item">
+                    <h4>정부지원금 4,500만원</h4>
+                    <p class="subtitle">"사업자 10만원 → 출판사 신고 무료 → 예비창업패키지 4,500만원"</p>
+
+                    <ul>
+                        <li>전체 가이드 (50p)</li>
+                        <li>합격 사업계획서 샘플</li>
+                        <li>면접 통과 비법 (합격률 70%)</li>
+                    </ul>
+                    <span class="value-tag">가치: 사업계획서 컨설팅 1회 300만원 상당</span>
+                </div>
+
+                <div class="week-item">
+                    <h4>작가의집 시스템 (1년 52권)</h4>
+                    <p class="subtitle">"편집장 1명 + 직원 1명 = 주 1권 × 52주 = 연 1.3억"</p>
+
+                    <ul>
+                        <li>업무 자동화 시스템 (Notion 템플릿)</li>
+                        <li><strong>AI 프롬프트 27종 전체</strong></li>
+                        <li>주 1권 출간 워크플로우</li>
+                    </ul>
+                    <span class="value-tag">가치: 시스템 구축 컨설팅 1회 500만원 상당</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq">
+        <div class="container">
+            <h2 class="section-title">걱정되시나요?</h2>
+
+            <div class="faq-item">
+                <p class="faq-question">😰 "글 못 써요"</p>
+                <p class="faq-answer">
+                    <span class="highlight">70대도 30분 만에 주제 3개 찾았습니다.</span><br>
+                    5+5 시스템으로 말하듯 쓰면 됩니다. AI가 80% 자동으로 써줍니다.<br>
+                    완성률 <span class="highlight">87%</span>가 증명합니다.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <p class="faq-question">😰 "시간 없어요"</p>
+                <p class="faq-answer">
+                    <span class="highlight">주 5시간 (하루 1시간)만 투자하세요.</span><br>
+                    강의 2시간 (출퇴근 중 청취) + 과제 3시간 (주말)<br>
+                    6주면 초고 완성됩니다.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <p class="faq-question">😰 "회수 가능한가요?"</p>
+                <p class="faq-answer">
+                    <span class="highlight">평균 6개월 회수</span><br>
+                    강의, 컨설팅으로 1년 만에 연 1,200만원 수익 누구나 가능합니다.<br>
+                    수강생 73%가 강의로 전환했습니다.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <p class="faq-question">😰 "6주 만에 정말 가능한가요?"</p>
+                <p class="faq-answer">
+                    <span class="highlight">데이터가 증명합니다:</span><br>
+                    제목 100% / 목차 95% / 초고 87% / 기획서 92%<br>
+                    <strong>출간률 99% (딱 1명 제외) / 출판사 계약률 100%</strong><br>
+                    수강생 52명의 실제 결과입니다.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Price Section -->
+    <section class="price-section">
+        <div class="container">
+            <h2 class="section-title">결제 옵션</h2>
+
+            <!-- 수익화 패키지 (추천) -->
+            <div class="price-card" style="border-color: var(--accent); margin-bottom: 48px;">
+                <span class="price-badge">🔥 추천: 수익화 패키지</span>
+                <p class="price-original">1,499만원</p>
+                <p class="price-current">1,299만원</p>
+                <p style="color: var(--accent); font-size: 20px; font-weight: 700; margin-bottom: 32px;">200만원 할인</p>
+
+                <ul class="price-benefits">
+                    <li>6주 완성 커리큘럼 전체 (1~6주차)</li>
+                    <li>AI 프롬프트 27종</li>
+                    <li>템플릿 & 가이드 전체</li>
+                    <li>1:1 멘토링 3회</li>
+                    <li>평생 멤버십</li>
+                    <li>6개월 AS</li>
+                    <li>출판사 연결 (50곳+)</li>
+                    <li>웨비나 시스템 전체 (스크립트+PPT+랜딩페이지)</li>
+                    <li>1인 출판사 설립 가이드</li>
+                </ul>
+
+                <div style="background: var(--bg-warm); padding: 24px; border-radius: 16px; margin: 24px 0;">
+                    <h4 style="font-size: 20px; margin-bottom: 16px; color: var(--accent);">💰 수익화 패키지 회수 계산</h4>
+                    <p style="font-size: 17px; line-height: 1.8; color: var(--text-dark);">
+                        수강 후 책쓰기 코칭으로 전환 시:<br>
+                        • <strong>1달에 1명씩 코칭</strong> → 1년 만에 원금 회수<br>
+                        • <strong>1달에 2명씩 코칭</strong> → 6개월 만에 원금 회수<br>
+                        • <strong>1달에 4명씩 코칭</strong> → 3개월 만에 원금 회수
+                    </p>
+                    <p style="font-size: 18px; font-weight: 700; color: var(--primary-dark); margin-top: 16px;">
+                        = 배운 내용을 바로 수익화하면 최소 3개월~최대 1년이면 투자금 전액 회수
+                    </p>
+                </div>
+
+                <div style="text-align: center; margin: 32px 0; padding: 24px; background: var(--primary-light); border-radius: 16px;">
+                    <p style="font-size: 18px; color: var(--text-medium); margin-bottom: 8px;">12개월 할부</p>
+                    <p style="font-size: 32px; font-weight: 900; color: var(--primary-dark);">월 108만원</p>
+                    <p style="font-size: 16px; color: var(--text-light); margin-top: 8px;">하루 36,000원 (조금 괜찮은 저녁 한 끼 값)</p>
+                </div>
+
+                <a href="#apply" class="cta-button">1,299만원 신청하기 →</a>
+
+                <div class="guarantee">
+                    <h3>🎁 100% 환불 보장</h3>
+                    <p>1주차 후 100% 환불</p>
+                    <p>1주차 과제 제출 / 3일 이내 신청 / 사유 안 물음 / 3영업일 이체</p>
+                    <p style="font-weight: 900; margin-top: 16px;">위험 0%</p>
+                </div>
+            </div>
+
+            <!-- 다른 패키지들 -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; margin: 64px 0;">
+                <!-- 패키지 1 -->
+                <div style="background: var(--white); border: 2px solid var(--primary); border-radius: 24px; padding: 40px;">
+                    <h3 style="font-size: 24px; margin-bottom: 16px; color: var(--text-dark);">원고만 완성 패키지</h3>
+                    <p style="font-size: 36px; font-weight: 900; color: var(--primary-dark); margin-bottom: 24px;">259만원</p>
+                    <ul style="list-style: none; padding: 0; font-size: 17px; line-height: 2; color: var(--text-medium);">
+                        <li>✅ 1~3주차 커리큘럼</li>
+                        <li>✅ AI 프롬프트 7종</li>
+                        <li>✅ 기본 템플릿 전체</li>
+                        <li>✅ 3개월 AS</li>
+                    </ul>
+                    <p style="margin-top: 24px; font-size: 16px; color: var(--text-light); font-style: italic;">
+                        이런 분께 추천:<br>
+                        일단 원고만 완성하고 싶으신 분
+                    </p>
+                    <a href="#apply" class="cta-button secondary" style="margin-top: 24px; display: block; text-align: center;">신청하기</a>
+                </div>
+
+                <!-- 패키지 2 -->
+                <div style="background: var(--white); border: 2px solid var(--primary); border-radius: 24px; padding: 40px;">
+                    <h3 style="font-size: 24px; margin-bottom: 16px; color: var(--text-dark);">1:1 코칭 2회 추가</h3>
+                    <p style="font-size: 36px; font-weight: 900; color: var(--primary-dark); margin-bottom: 24px;">359만원</p>
+                    <ul style="list-style: none; padding: 0; font-size: 17px; line-height: 2; color: var(--text-medium);">
+                        <li>✅ 원고 완성 패키지 전체</li>
+                        <li>✅ <strong>1:1 코칭 2회</strong></li>
+                        <li>✅ 출판사 50곳 명단</li>
+                        <li>✅ 4개월 AS</li>
+                    </ul>
+                    <p style="margin-top: 24px; font-size: 16px; color: var(--text-light); font-style: italic;">
+                        이런 분께 추천:<br>
+                        전문가 피드백이 필요하신 분
+                    </p>
+                    <a href="#apply" class="cta-button secondary" style="margin-top: 24px; display: block; text-align: center;">신청하기</a>
+                </div>
+
+                <!-- 패키지 3 -->
+                <div style="background: var(--white); border: 2px solid var(--primary); border-radius: 24px; padding: 40px;">
+                    <h3 style="font-size: 24px; margin-bottom: 16px; color: var(--text-dark);">출판 코칭 패키지</h3>
+                    <p style="font-size: 36px; font-weight: 900; color: var(--primary-dark); margin-bottom: 24px;">699만원</p>
+                    <ul style="list-style: none; padding: 0; font-size: 17px; line-height: 2; color: var(--text-medium);">
+                        <li>✅ 1~4주차 커리큘럼 전체</li>
+                        <li>✅ 기획서 + 계약 전략</li>
+                        <li>✅ 출판사 연결 + 협상</li>
+                        <li>✅ 5개월 AS</li>
+                    </ul>
+                    <p style="margin-top: 24px; font-size: 16px; color: var(--text-light); font-style: italic;">
+                        이런 분께 추천:<br>
+                        출판사 계약까지 원하시는 분
+                    </p>
+                    <a href="#apply" class="cta-button secondary" style="margin-top: 24px; display: block; text-align: center;">신청하기</a>
+                </div>
+
+                <!-- 패키지 4 -->
+                <div style="background: var(--white); border: 2px solid var(--primary); border-radius: 24px; padding: 40px;">
+                    <h3 style="font-size: 24px; margin-bottom: 16px; color: var(--text-dark);">1:1 코칭 2회 추가</h3>
+                    <p style="font-size: 36px; font-weight: 900; color: var(--primary-dark); margin-bottom: 24px;">799만원</p>
+                    <ul style="list-style: none; padding: 0; font-size: 17px; line-height: 2; color: var(--text-medium);">
+                        <li>✅ 출판 코칭 패키지 전체</li>
+                        <li>✅ <strong>1:1 코칭 2회 추가</strong></li>
+                        <li>✅ 전 과정 멘토링</li>
+                        <li>✅ 6개월 AS</li>
+                    </ul>
+                    <p style="margin-top: 24px; font-size: 16px; color: var(--text-light); font-style: italic;">
+                        이런 분께 추천:<br>
+                        밀착 관리를 원하시는 분
+                    </p>
+                    <a href="#apply" class="cta-button secondary" style="margin-top: 24px; display: block; text-align: center;">신청하기</a>
+                </div>
+            </div>
+
+            <!-- 전체 가치 환산 -->
+            <div class="value-box" style="margin-top: 64px;">
+                <h3>💎 전체 가치 환산</h3>
+                <p style="font-size: 18px; line-height: 2; text-align: left;">
+                    • 1주차: 제목 공식 + 목차 시스템 + 주제 발굴 = <strong>160만원</strong><br>
+                    • 2주차: 글쓰기 5+5 + AI 프롬프트 7종 + 80% 완성 = <strong>220만원</strong><br>
+                    • 3주차: 기획서 + 계약서 체크리스트 + 질문 7가지 = <strong>230만원</strong><br>
+                    • 4주차: 출간 전 마케팅 + 90일 플랜 + 수익 파이프라인 = <strong>500만원</strong><br>
+                    • 5주차: 재활용 7단계 + 코치 시스템 + 웨비나 = <strong>850만원</strong><br>
+                    • 6주차: 1인 출판사 + 1년 1억 수익 시스템 + 정부지원금 4,500만원 = <strong>측정 불가</strong>
+                </p>
+                <span class="emphasis">총 가치: 5,460만원 이상 (6주차 제외)</span>
+                <p style="margin-top: 16px; font-size: 20px;">실제 가격: <span style="color: var(--accent); font-weight: 900;">1,299만원</span></p>
+
+                <div style="background: rgba(199, 91, 57, 0.1); padding: 24px; border-radius: 16px; margin-top: 32px; border-left: 4px solid var(--accent);">
+                    <h4 style="font-size: 22px; color: var(--accent); margin-bottom: 16px;">💰 6주차 진짜 가치 계산</h4>
+                    <p style="font-size: 18px; line-height: 2;">
+                        <strong>1인 출판사로 1년 수익:</strong><br>
+                        • 황준연 실제 사례: 연 1억 이상<br>
+                        • 작가의집 시스템: 연 1.3억<br>
+                        • 정부지원금: 4,500만원 (예비창업패키지)<br><br>
+                        <strong style="color: var(--accent); font-size: 20px;">= 1년 차 수익: 1억 + 지원금 4,500만원 = 1.45억 이상</strong><br><br>
+                        <span style="font-size: 20px; color: var(--text-dark);">이 시스템을 배우는 가치 = 측정 불가</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Urgency Section -->
+    <section class="urgency" style="margin: 80px 24px;">
+        <div class="container">
+            <h3>⏰ 지금 신청해야 하는 이유</h3>
+
+            <div class="urgency-item">
+                <h4>🔥 1. 가격 인상</h4>
+                <p>현재: 1,299만원 → 다음: 1,999만원 = <strong>700만원 손해</strong></p>
+            </div>
+
+            <div class="urgency-item">
+                <h4>🔥 2. 인원 제한</h4>
+                <p>총 <strong>10명만</strong> 신청 가능 - 마감 시 대기</p>
+            </div>
+
+            <div class="urgency-item">
+                <h4>🔥 3. 보너스 소멸</h4>
+                <p>멘토링 3회, 웨비나 시스템, AI 27종 - <strong>이번만 무료</strong></p>
+            </div>
+
+            <div class="urgency-item">
+                <h4>🔥 4. 시간 = 돈</h4>
+                <p>1년 늦으면 = <strong>2,760만원 손실</strong> (월 230만원 × 12개월)</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="week-section">
+        <div class="container">
+            <h2 class="section-title">💥 실제 후기 (증거)</h2>
+
+            <div class="testimonial">
+                <p>"6주 → 계약, 3개월 → 강의 8건, 6개월 → 4,200만원"</p>
+                <p class="author">- 김○○님 (30대, 2024.07)</p>
+            </div>
+
+            <div class="testimonial">
+                <p>"5년 못 쓰다가 4주 만에 완성"</p>
+                <p class="author">- 이○○님 (40대, 2024.08)</p>
+            </div>
+
+            <div class="testimonial">
+                <p>"첫 회에서 1.65억. 10배 벌었어요"</p>
+                <p class="author">- 최○○님 (40대, 2024.09)</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer CTA -->
+    <section class="footer-cta">
+        <div class="container">
+            <h2>6개월 후, 당신의 모습은?</h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin: 64px 0;">
+                <div style="background: rgba(255,255,255,0.1); padding: 40px; border-radius: 24px;">
+                    <h3 style="color: var(--primary); font-size: 24px; margin-bottom: 24px;">✅ 신청하면</h3>
+                    <p style="font-size: 18px; line-height: 2;">
+                        ☕ 내 책 읽는 사람 목격<br>
+                        📧 강의 제안 (50만원)<br>
+                        👶 "엄마/아빠 작가야"<br>
+                        💰 월 평균 230만원
+                    </p>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.05); padding: 40px; border-radius: 24px;">
+                    <h3 style="color: #999; font-size: 24px; margin-bottom: 24px;">❌ 안 하면</h3>
+                    <p style="font-size: 18px; line-height: 2; color: #999;">
+                        😔 "언젠가는..."<br>
+                        📱 남의 책 부러워함<br>
+                        💸 월급만<br>
+                        😭 "그때 할걸..."
+                    </p>
+                </div>
+            </div>
+
+            <p class="countdown">🔥 7자리 남음</p>
+            <a href="#apply" class="cta-button">1,299만원 신청하기 →</a>
+            <p style="margin-top: 24px; color: var(--text-light);">⏰ 마감 시 1,999만원</p>
+
+            <div style="margin-top: 80px; padding-top: 48px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <h3 style="font-size: 24px; margin-bottom: 32px;">📞 신청 5단계</h3>
+                <p style="font-size: 18px; line-height: 2;">
+                    1. 버튼 클릭<br>
+                    2. 신청서 (2분)<br>
+                    3. 결제<br>
+                    4. 메일 (24시간)<br>
+                    5. 1주차 시작
+                </p>
+                <a href="#apply" class="cta-button" style="margin-top: 32px;">신청하기 →</a>
+            </div>
+
+            <div style="margin-top: 64px;">
+                <p style="font-size: 28px; font-family: 'Nanum Myeongjo', serif; font-weight: 700; margin-bottom: 24px;">
+                    "1년 후 후회 vs 지금 도전"
+                </p>
+                <p style="font-size: 20px; color: var(--primary);">👉 선택은 당신의 몫입니다 👈</p>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

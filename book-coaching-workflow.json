@@ -1,0 +1,219 @@
+{
+  "name": "책쓰기 자동화 코칭 시스템",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "book-coaching",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-start",
+      "name": "Webhook - 사용자 입력",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "당신은 출판사가 바로 계약하는 책 제목을 만드는 전문가입니다. 제목 공식 10가지를 활용하여 매력적인 제목을 생성합니다."
+            },
+            {
+              "role": "user",
+              "content": "=사용자 정보:\n- 주제: {{ $json.body.topic }}\n- 나이: {{ $json.body.age }}\n- 직업: {{ $json.body.job }}\n- 경험: {{ $json.body.experience }}\n\n위 정보를 바탕으로 출판사가 바로 계약할 만한 책 제목 10개를 생성해주세요.\n\n제목 공식:\n1. 숫자 + 결과 (예: \"29년 못 쓴 사람도 2달 만에 출간\")\n2. 타겟 + 고민 해결 (예: \"마흔, 폭풍성장으로 부의 추월차선에 타라\")\n3. Before → After (예: \"월급쟁이 → 베스트셀러 작가\")\n4. 시간 압박 (예: \"6주 만에 책 쓰기 완성\")\n5. 구체적 숫자 (예: \"연 1,200만원 버는 작가 되기\")\n6. 질문형 (예: \"왜 당신은 아직도 책을 못 썼나요?\")\n7. 금지/경고 (예: \"완벽주의가 책쓰기를 망칩니다\")\n8. 비밀/공개 (예: \"출판사가 숨기는 계약의 비밀\")\n9. 시스템 (예: \"5+5 글쓰기 시스템\")\n10. 스토리 (예: \"70대도 30분 만에 찾은 책 DNA\")\n\n각 제목마다 부제도 함께 생성해주세요.\n형식:\n1. [제목]\n   - 부제: [부제]\n\n총 10개를 생성해주세요."
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.9
+        }
+      },
+      "id": "openai-title",
+      "name": "OpenAI - 제목 10개 생성",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "1",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "당신은 베스트셀러 책의 목차를 구성하는 전문가입니다. Why-What-How-Do-Future 5부 구조로 40꼭지를 체계적으로 생성합니다."
+            },
+            {
+              "role": "user",
+              "content": "=선택된 제목:\n{{ $node[\"OpenAI - 제목 10개 생성\"].json.choices[0].message.content }}\n\n위 제목 중 첫 번째 제목을 기반으로 40꼭지 목차를 생성해주세요.\n\n구조:\n**1부 - Why (왜 필요한가?) - 8꼭지**\n- 독자의 고민과 문제 제시\n- 현재 상황의 위험성\n- 변화의 필요성\n\n**2부 - What (무엇을 해야 하나?) - 8꼭지**\n- 해결책 개요\n- 핵심 개념 설명\n- 원리와 법칙\n\n**3부 - How (어떻게 하나?) - 12꼭지**\n- 구체적 실행 방법\n- 단계별 가이드\n- 실전 템플릿\n\n**4부 - Do (실천하기) - 8꼭지**\n- 실제 사례\n- 문제 해결\n- 자주 묻는 질문\n\n**5부 - Future (미래 전망) - 4꼭지**\n- 지속 가능한 시스템\n- 다음 단계\n- 마무리\n\n각 꼭지는 다음 형식으로:\n꼭지 번호. [소제목] - [한 줄 설명]\n\n예시:\n1. 27년째 책쓰기 포기한 사람들의 공통점 - 제목이 전부였습니다\n\n총 40꼭지를 생성해주세요."
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.8
+        }
+      },
+      "id": "openai-outline",
+      "name": "OpenAI - 목차 40꼭지 생성",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "1",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "구글 시트 ID를 여기에 입력",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "책쓰기 코칭 결과",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "이름": "={{ $node['Webhook - 사용자 입력'].json.body.name }}",
+            "이메일": "={{ $node['Webhook - 사용자 입력'].json.body.email }}",
+            "나이": "={{ $node['Webhook - 사용자 입력'].json.body.age }}",
+            "직업": "={{ $node['Webhook - 사용자 입력'].json.body.job }}",
+            "주제": "={{ $node['Webhook - 사용자 입력'].json.body.topic }}",
+            "경험": "={{ $node['Webhook - 사용자 입력'].json.body.experience }}",
+            "생성된 제목": "={{ $node['OpenAI - 제목 10개 생성'].json.choices[0].message.content }}",
+            "생성된 목차": "={{ $node['OpenAI - 목차 40꼭지 생성'].json.choices[0].message.content }}",
+            "생성일시": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "google-sheets",
+      "name": "Google Sheets - 결과 저장",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [850, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $node['Webhook - 사용자 입력'].json.body.email }}",
+        "subject": "=🎉 {{ $node['Webhook - 사용자 입력'].json.body.name }}님의 책 제목 10개와 목차 40꼭지가 완성되었습니다!",
+        "emailType": "html",
+        "message": "=<html>\n<head>\n  <style>\n    body { font-family: 'Noto Sans KR', sans-serif; background: #FFFCF7; padding: 20px; }\n    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; padding: 40px; }\n    h1 { color: #C75B39; font-size: 28px; margin-bottom: 20px; }\n    h2 { color: #E8A849; font-size: 22px; margin-top: 32px; margin-bottom: 16px; }\n    p { line-height: 1.8; color: #2D2A26; font-size: 16px; }\n    .highlight { background: #FFF5E6; padding: 20px; border-radius: 12px; border-left: 4px solid #E8A849; margin: 20px 0; }\n    .cta-button { display: inline-block; background: linear-gradient(135deg, #E8A849 0%, #D4942E 100%); color: white; padding: 16px 40px; border-radius: 40px; text-decoration: none; font-weight: 700; margin-top: 24px; }\n    pre { background: #f5f5f5; padding: 16px; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>🎉 축하합니다, {{ $node['Webhook - 사용자 입력'].json.body.name }}님!</h1>\n    \n    <p>요청하신 <strong>책 제목 10개</strong>와 <strong>목차 40꼭지</strong>가 완성되었습니다.</p>\n    \n    <div class=\"highlight\">\n      <strong>📋 입력하신 정보:</strong><br>\n      • 주제: {{ $node['Webhook - 사용자 입력'].json.body.topic }}<br>\n      • 나이: {{ $node['Webhook - 사용자 입력'].json.body.age }}세<br>\n      • 직업: {{ $node['Webhook - 사용자 입력'].json.body.job }}<br>\n      • 경험: {{ $node['Webhook - 사용자 입력'].json.body.experience }}\n    </div>\n    \n    <h2>📚 생성된 제목 10개</h2>\n    <pre>{{ $node['OpenAI - 제목 10개 생성'].json.choices[0].message.content }}</pre>\n    \n    <h2>📖 생성된 목차 40꼭지</h2>\n    <pre>{{ $node['OpenAI - 목차 40꼭지 생성'].json.choices[0].message.content }}</pre>\n    \n    <div class=\"highlight\">\n      <strong>💡 다음 단계:</strong><br>\n      이 제목과 목차로 바로 출간까지 도와드립니다!<br><br>\n      \n      <strong>6주 책쓰기 완성 프로그램</strong>에 참여하시면:<br>\n      ✅ AI 프롬프트 27종 제공<br>\n      ✅ 1:1 멘토링 3회<br>\n      ✅ 출판사 50곳 연결<br>\n      ✅ 출간률 99% 보장<br><br>\n      \n      <a href=\"http://localhost:5678/book-coaching-form.html\" class=\"cta-button\">6주 프로그램 신청하기 →</a>\n    </div>\n    \n    <p style=\"margin-top: 40px; color: #8A8580; font-size: 14px;\">\n      감사합니다.<br>\n      <strong>작가의집</strong> 드림\n    </p>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "gmail-send",
+      "name": "Gmail - 결과 이메일 발송",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1050, 300],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3",
+          "name": "Gmail OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"message\": \"책 제목과 목차가 성공적으로 생성되었습니다!\",\n  \"data\": {\n    \"name\": $node['Webhook - 사용자 입력'].json.body.name,\n    \"email\": $node['Webhook - 사용자 입력'].json.body.email,\n    \"titles\": $node['OpenAI - 제목 10개 생성'].json.choices[0].message.content,\n    \"outline\": $node['OpenAI - 목차 40꼭지 생성'].json.choices[0].message.content\n  }\n} }}",
+        "options": {}
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response - 결과 반환",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - 사용자 입력": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - 제목 10개 생성",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - 제목 10개 생성": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - 목차 40꼭지 생성",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - 목차 40꼭지 생성": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - 결과 저장",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - 결과 저장": {
+      "main": [
+        [
+          {
+            "node": "Gmail - 결과 이메일 발송",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - 결과 이메일 발송": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response - 결과 반환",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-12-28T00:00:00.000Z",
+  "versionId": "1"
+}

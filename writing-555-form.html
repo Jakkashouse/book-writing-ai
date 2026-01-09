@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✍️ 글쓰기 5+5 시스템 - 3줄 → 1,500자 자동 확장</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #E8A849;
+            --primary-dark: #D4942E;
+            --accent: #C75B39;
+            --text-dark: #2D2A26;
+            --white: #FFFFFF;
+            --success: #4A9B7F;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(180deg, #FDF8F2 0%, #FFFCF7 100%);
+            padding: 40px 20px;
+            line-height: 1.8;
+        }
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: 0 12px 40px rgba(45, 42, 38, 0.12);
+        }
+        h1 {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 36px;
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 20px;
+            color: #5A554E;
+            margin-bottom: 48px;
+        }
+        .highlight-box {
+            background: #FFF5E6;
+            border-left: 5px solid var(--primary);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+        }
+        .highlight-box h3 {
+            color: var(--accent);
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+        .highlight-box ul {
+            list-style: none;
+            padding: 0;
+        }
+        .highlight-box li {
+            padding: 8px 0 8px 28px;
+            position: relative;
+        }
+        .highlight-box li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: 900;
+        }
+        .form-group {
+            margin-bottom: 28px;
+        }
+        label {
+            display: block;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+        .required {
+            color: var(--accent);
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 17px;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        .help-text {
+            font-size: 14px;
+            color: #8A8580;
+            margin-top: 8px;
+        }
+        .submit-button {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 20px;
+            border: none;
+            border-radius: 60px;
+            font-size: 22px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(232, 168, 73, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 16px;
+        }
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(232, 168, 73, 0.5);
+        }
+        .submit-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .result {
+            display: none;
+            background: #FDF8F2;
+            padding: 32px;
+            border-radius: 16px;
+            margin-top: 32px;
+        }
+        .result h2 {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 28px;
+            color: var(--accent);
+            margin-bottom: 24px;
+        }
+        .result pre {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            margin-bottom: 24px;
+            border: 1px solid #e0e0e0;
+        }
+        .success-message {
+            background: var(--success);
+            color: var(--white);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .error-message {
+            background: #f44336;
+            color: var(--white);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            margin-top: 20px;
+        }
+        .example-box {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 32px;
+        }
+        .example-box h4 {
+            color: #1976D2;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✍️ 글쓰기 5+5 시스템</h1>
+        <p class="subtitle">3줄만 쓰면 AI가 1,500자 전문가 글로 자동 확장합니다</p>
+
+        <div class="highlight-box">
+            <h3>🎁 자동으로 받으실 수 있는 것:</h3>
+            <ul>
+                <li>3줄 → 1,500자 전문가 글 자동 확장 (5+5 구조)</li>
+                <li>가독성 & 후킹력 점수 (10점 만점)</li>
+                <li>개선 포인트 3가지 + 강점 3가지</li>
+                <li>추천 제목 5개</li>
+                <li>이메일로 전체 결과 발송</li>
+            </ul>
+        </div>
+
+        <div class="example-box">
+            <h4>💡 예시</h4>
+            <strong>입력 (3줄):</strong><br>
+            "육아는 힘들다. 밤 9시에 퇴근하면 잠든 아이만 본다. 주말에만 아빠 노릇을 한다."<br><br>
+            <strong>출력 (1,500자):</strong><br>
+            "밤 9시 퇴근해서 잠든 아이만 보시나요? 주말 아빠로 살아가는 당신에게..."<br>
+            (후킹 질문 → 공감 스토리 → 문제 본질 → 해결책 → 실천 가이드로 확장)
+        </div>
+
+        <form id="writingForm">
+            <div class="form-group">
+                <label for="name">이름<span class="required">*</span></label>
+                <input type="text" id="name" name="name" required placeholder="홍길동">
+            </div>
+
+            <div class="form-group">
+                <label for="email">이메일<span class="required">*</span></label>
+                <input type="email" id="email" name="email" required placeholder="hong@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="idea">3줄 아이디어<span class="required">*</span></label>
+                <textarea id="idea" name="idea" required placeholder="예시:&#10;육아는 힘들다.&#10;밤 9시에 퇴근하면 잠든 아이만 본다.&#10;주말에만 아빠 노릇을 한다."></textarea>
+                <p class="help-text">쓰고 싶은 내용을 3줄로 간단히 적어주세요</p>
+            </div>
+
+            <div class="form-group">
+                <label for="target">타겟 독자<span class="required">*</span></label>
+                <input type="text" id="target" name="target" required placeholder="예: 워킹맘, 직장인, 창업가">
+                <p class="help-text">누구에게 전달하고 싶은 글인가요?</p>
+            </div>
+
+            <div class="form-group">
+                <label for="tone">원하는 톤<span class="required">*</span></label>
+                <select id="tone" name="tone" required>
+                    <option value="">선택하세요</option>
+                    <option value="친근하고 공감적인">친근하고 공감적인</option>
+                    <option value="전문적이고 권위있는">전문적이고 권위있는</option>
+                    <option value="따뜻하고 위로하는">따뜻하고 위로하는</option>
+                    <option value="강렬하고 동기부여하는">강렬하고 동기부여하는</option>
+                    <option value="실용적이고 명확한">실용적이고 명확한</option>
+                </select>
+            </div>
+
+            <button type="submit" class="submit-button" id="submitBtn">
+                🚀 3줄을 1,500자로 확장하기
+            </button>
+
+            <div class="error-message" id="errorMessage"></div>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p style="font-size: 18px; color: #5A554E;">AI가 5+5 시스템으로 글을 확장 중입니다...<br>잠시만 기다려주세요 (약 20초)</p>
+        </div>
+
+        <div class="result" id="result">
+            <div class="success-message">
+                ✅ 1,500자 전문가 글이 완성되었습니다! 이메일도 발송되었습니다.
+            </div>
+
+            <h2>📚 완성된 글 (1,500자)</h2>
+            <pre id="expandedResult"></pre>
+
+            <h2>📊 글 진단 리포트</h2>
+            <pre id="reviewResult"></pre>
+
+            <div style="background: #FFF5E6; padding: 24px; border-radius: 12px; border-left: 4px solid var(--primary); margin-top: 32px;">
+                <h3 style="color: var(--accent); font-size: 20px; margin-bottom: 16px;">🎓 40꼭지 4주 완성하기</h3>
+                <p style="font-size: 17px; line-height: 1.8;">
+                    이 방식으로 <strong>40꼭지를 4주 만에</strong> 완성할 수 있습니다!<br><br>
+                    ✅ 주 10꼭지 자동 생성<br>
+                    ✅ AI 교정 & 탈고<br>
+                    ✅ 완성률 92%<br>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('writingForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const errorMessage = document.getElementById('errorMessage');
+        const expandedResult = document.getElementById('expandedResult');
+        const reviewResult = document.getElementById('reviewResult');
+
+        const WEBHOOK_URL = 'http://localhost:5678/webhook/writing-555';
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '확장 중...';
+
+            form.style.display = 'none';
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                idea: document.getElementById('idea').value,
+                target: document.getElementById('target').value,
+                tone: document.getElementById('tone').value
+            };
+
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) throw new Error('서버 응답 오류: ' + response.status);
+
+                const data = await response.json();
+
+                if (data.success) {
+                    expandedResult.textContent = data.data.expanded;
+                    reviewResult.textContent = data.data.review;
+
+                    loading.style.display = 'none';
+                    result.style.display = 'block';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    throw new Error(data.message || '알 수 없는 오류');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                loading.style.display = 'none';
+                form.style.display = 'block';
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = `⚠️ 오류: ${error.message}\n\n1. n8n 서버 실행 확인\n2. Webhook URL 확인\n3. OpenAI API Key 확인`;
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 3줄을 1,500자로 확장하기';
+            }
+        });
+    </script>
+</body>
+</html>

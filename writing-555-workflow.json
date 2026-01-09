@@ -1,0 +1,205 @@
+{
+  "name": "글쓰기 5+5 시스템 자동화",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "writing-555",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-start",
+      "name": "Webhook - 3줄 아이디어 입력",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "당신은 3줄 아이디어를 1,500자 전문가 글로 확장하는 전문 작가입니다. 5+5 시스템을 활용합니다:\n\n**5+5 시스템 구조:**\n1. 후킹 질문 (독자의 고민 건드리기)\n2. 공감 스토리 (\"나도 그랬어요\")\n3. 문제의 본질 (왜 그런 일이 생기는가)\n4. 해결책 제시 (구체적 방법)\n5. 실천 가이드 (바로 할 수 있는 것)\n\n각 파트는 300자 내외, 총 1,500자로 작성합니다.\n말하듯이 쓰되, 전문가처럼 보이게 만듭니다."
+            },
+            {
+              "role": "user",
+              "content": "=3줄 아이디어:\n{{ $json.body.idea }}\n\n타겟 독자: {{ $json.body.target }}\n원하는 톤: {{ $json.body.tone }}\n\n위 아이디어를 5+5 시스템으로 1,500자 전문가 글로 확장해주세요.\n\n구조:\n\n**1. 후킹 질문 (300자)**\n[독자의 고민을 정확히 건드리는 질문으로 시작]\n\n**2. 공감 스토리 (300자)**\n[\"저도 똑같았어요\" - 공감대 형성]\n\n**3. 문제의 본질 (300자)**\n[왜 이런 문제가 생기는지 본질 파악]\n\n**4. 해결책 제시 (300자)**\n[구체적이고 실용적인 해결 방법]\n\n**5. 실천 가이드 (300자)**\n[오늘 당장 할 수 있는 3가지 액션 아이템]\n\n---\n\n**글쓰기 원칙:**\n- 문장은 짧게 (20자 내외)\n- 전문 용어 최소화\n- 구체적 숫자 활용\n- 스토리텔링 기법 사용\n- 독자에게 직접 말하듯 작성"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.8
+        }
+      },
+      "id": "openai-expand",
+      "name": "OpenAI - 5+5 확장",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "1",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "당신은 전문 편집자입니다. 완성된 글을 검토하고 개선점을 제시합니다."
+            },
+            {
+              "role": "user",
+              "content": "=작성된 글:\n{{ $node['OpenAI - 5+5 확장'].json.choices[0].message.content }}\n\n위 글을 검토하고 다음 항목을 체크해주세요:\n\n1. **가독성 점수** (10점 만점)\n2. **후킹력 점수** (10점 만점)\n3. **개선 포인트 3가지**\n4. **강점 3가지**\n5. **추천 제목 5개**\n\n형식:\n## 📊 글 진단 리포트\n\n### 점수\n- 가독성: X/10\n- 후킹력: X/10\n\n### ⚠️ 개선 포인트\n1. ...\n2. ...\n3. ...\n\n### ✅ 강점\n1. ...\n2. ...\n3. ...\n\n### 💡 추천 제목\n1. ...\n2. ...\n3. ...\n4. ...\n5. ..."
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "openai-review",
+      "name": "OpenAI - 글 진단",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "1",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "구글 시트 ID",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "글쓰기 5+5 결과",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "이름": "={{ $node['Webhook - 3줄 아이디어 입력'].json.body.name }}",
+            "이메일": "={{ $node['Webhook - 3줄 아이디어 입력'].json.body.email }}",
+            "원본 아이디어": "={{ $node['Webhook - 3줄 아이디어 입력'].json.body.idea }}",
+            "타겟 독자": "={{ $node['Webhook - 3줄 아이디어 입력'].json.body.target }}",
+            "확장된 글": "={{ $node['OpenAI - 5+5 확장'].json.choices[0].message.content }}",
+            "진단 리포트": "={{ $node['OpenAI - 글 진단'].json.choices[0].message.content }}",
+            "생성일시": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}"
+          }
+        }
+      },
+      "id": "google-sheets",
+      "name": "Google Sheets - 저장",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [850, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2",
+          "name": "Google Sheets API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $node['Webhook - 3줄 아이디어 입력'].json.body.email }}",
+        "subject": "=✍️ {{ $node['Webhook - 3줄 아이디어 입력'].json.body.name }}님의 1,500자 전문가 글이 완성되었습니다!",
+        "emailType": "html",
+        "message": "=<html>\n<head>\n  <style>\n    body { font-family: 'Noto Sans KR', sans-serif; background: #FFFCF7; padding: 20px; }\n    .container { max-width: 650px; margin: 0 auto; background: white; border-radius: 16px; padding: 40px; }\n    h1 { color: #C75B39; font-size: 28px; margin-bottom: 20px; }\n    h2 { color: #E8A849; font-size: 22px; margin-top: 32px; margin-bottom: 16px; }\n    .box { background: #FFF5E6; padding: 20px; border-radius: 12px; border-left: 4px solid #E8A849; margin: 20px 0; }\n    pre { background: #f5f5f5; padding: 16px; border-radius: 8px; white-space: pre-wrap; line-height: 1.8; }\n    .cta { display: inline-block; background: linear-gradient(135deg, #E8A849 0%, #D4942E 100%); color: white; padding: 16px 40px; border-radius: 40px; text-decoration: none; font-weight: 700; margin-top: 24px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>✍️ 축하합니다, {{ $node['Webhook - 3줄 아이디어 입력'].json.body.name }}님!</h1>\n    \n    <p>3줄 아이디어가 <strong>1,500자 전문가 글</strong>로 완성되었습니다!</p>\n    \n    <div class=\"box\">\n      <strong>📝 원본 아이디어 (3줄):</strong><br>\n      {{ $node['Webhook - 3줄 아이디어 입력'].json.body.idea }}\n    </div>\n    \n    <h2>📚 완성된 글 (1,500자)</h2>\n    <pre>{{ $node['OpenAI - 5+5 확장'].json.choices[0].message.content }}</pre>\n    \n    <h2>📊 글 진단 리포트</h2>\n    <pre>{{ $node['OpenAI - 글 진단'].json.choices[0].message.content }}</pre>\n    \n    <div class=\"box\">\n      <strong>💡 다음 단계:</strong><br>\n      이 방식으로 40꼭지를 4주 안에 완성할 수 있습니다!<br><br>\n      \n      <strong>40꼭지 4주 완성 시스템:</strong><br>\n      ✅ 주 10꼭지 자동 생성<br>\n      ✅ AI 교정 & 탈고 자동화<br>\n      ✅ 1:1 피드백 포함<br>\n      ✅ 완성률 92% 보장<br><br>\n      \n      <a href=\"http://localhost:5678/dashboard.html\" class=\"cta\">전체 자동화 시스템 보기 →</a>\n    </div>\n    \n    <p style=\"margin-top: 40px; color: #8A8580; font-size: 14px;\">\n      감사합니다.<br>\n      <strong>작가의집 AI 시스템</strong>\n    </p>\n  </div>\n</body>\n</html>"
+      },
+      "id": "gmail",
+      "name": "Gmail - 결과 발송",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1050, 300],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3",
+          "name": "Gmail OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"message\": \"3줄이 1,500자로 확장되었습니다!\",\n  \"data\": {\n    \"original\": $node['Webhook - 3줄 아이디어 입력'].json.body.idea,\n    \"expanded\": $node['OpenAI - 5+5 확장'].json.choices[0].message.content,\n    \"review\": $node['OpenAI - 글 진단'].json.choices[0].message.content,\n    \"wordCount\": $node['OpenAI - 5+5 확장'].json.choices[0].message.content.length\n  }\n} }}"
+      },
+      "id": "response",
+      "name": "Response - 결과 반환",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - 3줄 아이디어 입력": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - 5+5 확장",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - 5+5 확장": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - 글 진단",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - 글 진단": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - 저장",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - 저장": {
+      "main": [
+        [
+          {
+            "node": "Gmail - 결과 발송",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - 결과 발송": {
+      "main": [
+        [
+          {
+            "node": "Response - 결과 반환",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

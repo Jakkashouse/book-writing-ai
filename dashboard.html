@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 책쓰기 자동화 시스템 - 통합 대시보드</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #E8A849;
+            --primary-dark: #D4942E;
+            --accent: #C75B39;
+            --text-dark: #2D2A26;
+            --text-medium: #5A554E;
+            --text-light: #8A8580;
+            --bg-cream: #FFFCF7;
+            --bg-warm: #FDF8F2;
+            --white: #FFFFFF;
+            --success: #4A9B7F;
+            --light-bg: #FFF5E6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(180deg, var(--bg-warm) 0%, var(--bg-cream) 100%);
+            color: var(--text-dark);
+            line-height: 1.8;
+            padding: 40px 20px;
+        }
+
+        .header {
+            max-width: 1200px;
+            margin: 0 auto 60px;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 48px;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 22px;
+            color: var(--text-medium);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .tagline {
+            font-size: 16px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .process-flow {
+            max-width: 1200px;
+            margin: 0 auto 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .process-item {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .process-number {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            border-radius: 50%;
+            font-size: 24px;
+            font-weight: 900;
+            line-height: 50px;
+            margin-bottom: 12px;
+        }
+
+        .process-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .process-desc {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .arrow {
+            font-size: 28px;
+            color: var(--primary);
+            margin: 0 10px;
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .arrow {
+                display: block;
+            }
+            .process-item {
+                flex: 0 1 auto;
+                min-width: 120px;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 28px;
+            margin-bottom: 60px;
+        }
+
+        .tool-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 36px;
+            box-shadow: 0 8px 32px rgba(45, 42, 38, 0.08);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border: 2px solid transparent;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(45, 42, 38, 0.15);
+            border-color: var(--primary);
+        }
+
+        .tool-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .tool-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .tool-number {
+            display: inline-block;
+            background: var(--light-bg);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .tool-desc {
+            font-size: 16px;
+            color: var(--text-medium);
+            margin-bottom: 20px;
+            flex-grow: 1;
+            line-height: 1.7;
+        }
+
+        .tool-features {
+            list-style: none;
+            margin-bottom: 24px;
+        }
+
+        .tool-features li {
+            font-size: 14px;
+            color: var(--text-medium);
+            padding: 8px 0;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .tool-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: 900;
+        }
+
+        .tool-cta {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 14px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(232, 168, 73, 0.3);
+            width: 100%;
+        }
+
+        .tool-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(232, 168, 73, 0.4);
+        }
+
+        .stage-section {
+            margin-bottom: 60px;
+        }
+
+        .stage-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid var(--primary);
+            display: inline-block;
+        }
+
+        .stage-desc {
+            font-size: 16px;
+            color: var(--text-medium);
+            margin-bottom: 32px;
+        }
+
+        .info-banner {
+            background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
+            border-left: 5px solid #2196F3;
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .info-banner strong {
+            color: #1976D2;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 60px;
+        }
+
+        .stat-card {
+            background: var(--light-bg);
+            padding: 24px;
+            border-radius: 16px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-medium);
+            font-weight: 600;
+        }
+
+        .footer {
+            max-width: 1200px;
+            margin: 80px auto 40px;
+            text-align: center;
+            padding-top: 40px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .footer p {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+            }
+            .subtitle {
+                font-size: 18px;
+            }
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            .process-flow {
+                flex-direction: column;
+            }
+            .arrow {
+                transform: rotate(90deg);
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📚 책쓰기 자동화 시스템</h1>
+        <p class="subtitle">초보 작가도 6주 안에 책 완성 & 출간까지</p>
+        <p class="tagline">5개의 AI 자동화 도구를 한 곳에서 관리하세요</p>
+    </div>
+
+    <div class="process-flow">
+        <div class="process-item">
+            <div class="process-number">1</div>
+            <div class="process-name">기획</div>
+            <div class="process-desc">제목 & 목차</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="process-item">
+            <div class="process-number">2</div>
+            <div class="process-name">글쓰기</div>
+            <div class="process-desc">5+5 시스템</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="process-item">
+            <div class="process-number">3</div>
+            <div class="process-name">교정</div>
+            <div class="process-desc">탈고 완성</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="process-item">
+            <div class="process-number">4</div>
+            <div class="process-name">SNS</div>
+            <div class="process-desc">콘텐츠 변환</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="process-item">
+            <div class="process-number">5</div>
+            <div class="process-name">마케팅</div>
+            <div class="process-desc">출판 기획서</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="info-banner">
+            <strong>⚙️ 시스템 요구사항:</strong> 이 대시보드를 사용하려면 n8n 서버가 실행 중이어야 합니다. 터미널에서 <code>n8n</code> 명령어를 실행한 후 사용해주세요.
+        </div>
+
+        <!-- Stage 1: 기획 -->
+        <div class="stage-section">
+            <div class="stage-title">📖 1단계: 기획 단계</div>
+            <div class="stage-desc">책의 컨셉을 정하고 제목과 목차를 생성합니다</div>
+
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-number">자동화 도구</div>
+                    <div class="tool-icon">📚</div>
+                    <div class="tool-title">AI 책쓰기 자동화</div>
+                    <div class="tool-desc">30초 입력 → 제목 10개 + 목차 40꼭지 자동 생성</div>
+                    <ul class="tool-features">
+                        <li>제목 10개 (공식 10가지 적용)</li>
+                        <li>Why-What-How 구조의 목차</li>
+                        <li>Google Sheets 자동 저장</li>
+                        <li>이메일 발송</li>
+                    </ul>
+                    <a href="book-coaching-form.html" class="tool-cta">🚀 지금 시작하기</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stage 2: 글쓰기 -->
+        <div class="stage-section">
+            <div class="stage-title">✍️ 2단계: 글쓰기 단계</div>
+            <div class="stage-desc">3줄 아이디어를 1,500자 전문가 글로 확장합니다</div>
+
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-number">자동화 도구</div>
+                    <div class="tool-icon">✍️</div>
+                    <div class="tool-title">글쓰기 5+5 시스템</div>
+                    <div class="tool-desc">3줄만 쓰면 AI가 1,500자 전문가 글로 자동 확장</div>
+                    <ul class="tool-features">
+                        <li>3줄 → 1,500자 자동 확장</li>
+                        <li>5+5 구조 (후킹→공감→본질→해결→실천)</li>
+                        <li>가독성 & 후킹력 점수</li>
+                        <li>추천 제목 5개</li>
+                    </ul>
+                    <a href="writing-555-form.html" class="tool-cta">🚀 지금 시작하기</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stage 3: 교정 -->
+        <div class="stage-section">
+            <div class="stage-title">📝 3단계: 교정 & 탈고 단계</div>
+            <div class="stage-desc">원고의 맞춤법, 문체, 가독성을 검사하고 탈고합니다</div>
+
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-number">자동화 도구</div>
+                    <div class="tool-icon">📝</div>
+                    <div class="tool-title">AI 교정 & 탈고 시스템</div>
+                    <div class="tool-desc">초고 업로드 → AI 자동 검사 & 수정안 → 탈고 완성본</div>
+                    <ul class="tool-features">
+                        <li>맞춤법 & 띄어쓰기 전체 검사</li>
+                        <li>문체 & 톤 개선 방안</li>
+                        <li>가독성 점수 (10점 만점)</li>
+                        <li>전문가 수준 탈고 완성본</li>
+                    </ul>
+                    <a href="proofreading-form.html" class="tool-cta">🚀 지금 시작하기</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stage 4: SNS 마케팅 -->
+        <div class="stage-section">
+            <div class="stage-title">🎯 4단계: SNS 콘텐츠 단계</div>
+            <div class="stage-desc">1개의 글을 7가지 채널별 콘텐츠로 자동 변환합니다</div>
+
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-number">자동화 도구</div>
+                    <div class="tool-icon">🎯</div>
+                    <div class="tool-title">SNS 콘텐츠 변환기</div>
+                    <div class="tool-desc">책 1꼭지 → 7가지 채널 콘텐츠 자동 생성</div>
+                    <ul class="tool-features">
+                        <li>블로그 포스트 (1,200자)</li>
+                        <li>인스타그램 피드 & 릴스</li>
+                        <li>TikTok & 유튜브 스크립트</li>
+                        <li>이메일 & 트위터 콘텐츠</li>
+                    </ul>
+                    <a href="sns-converter-form.html" class="tool-cta">🚀 지금 시작하기</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stage 5: 출판 -->
+        <div class="stage-section">
+            <div class="stage-title">📄 5단계: 출판 단계</div>
+            <div class="stage-desc">출판사 제출용 기획서를 자동 생성하고 평가받습니다</div>
+
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-number">자동화 도구</div>
+                    <div class="tool-icon">📄</div>
+                    <div class="tool-title">출판 기획서 자동 생성기</div>
+                    <div class="tool-desc">제목과 목차만 입력하면 출판사 제출용 기획서 완성</div>
+                    <ul class="tool-features">
+                        <li>타겟 독자 분석</li>
+                        <li>시장 분석 & 경쟁 우위</li>
+                        <li>마케팅 전략</li>
+                        <li>편집장 평가 리포트</li>
+                    </ul>
+                    <a href="proposal-generator-form.html" class="tool-cta">🚀 지금 시작하기</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 통계 -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">6주</div>
+                <div class="stat-label">책 완성까지 소요 시간</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">280개</div>
+                <div class="stat-label">생성되는 SNS 콘텐츠</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">99%</div>
+                <div class="stat-label">완성률 보장</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">30%</div>
+                <div class="stat-label">출판사 계약률</div>
+            </div>
+        </div>
+
+        <div class="info-banner" style="background: linear-gradient(135deg, #FFF5E6 0%, #FFE8CC 100%); border-left-color: var(--primary);">
+            <strong style="color: var(--accent);">💡 총 4주 계획:</strong><br>
+            <strong>1주차:</strong> 제목 & 목차 생성 → 기획서 작성<br>
+            <strong>2주차:</strong> 글쓰기 (주 10꼭지) → 교정 & 탈고<br>
+            <strong>3주차:</strong> SNS 콘텐츠 변환 (280개) → 배포 준비<br>
+            <strong>4주차:</strong> 최종 편집 → 출판사 제출 → 계약 체결
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>작가의집 AI 자동화 시스템</strong></p>
+        <p>초보 작가도 전문가처럼 책을 쓸 수 있도록 돕습니다</p>
+    </div>
+</body>
+</html>
