@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for dir in prompts/*/)",
+      "Bash(find:*)",
+      "Bash(dir \"c:\\\\Users\\\\JUN\\\\Downloads\\\\세상에서_제일_멋진_누나\")",
+      "Bash(powershell -Command \"Get-ChildItem ''C:\\\\Users\\\\JUN\\\\Downloads'' | Where-Object { $_Name -like ''*누나*'' }\")",
+      "Bash(powershell:*)",
+      "Bash(cmd /c \"dir /b C:\\\\Users\\\\JUN\\\\Downloads\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "WebSearch",
+      "Bash(ls:*)",
+      "Bash(dir \"C:\\\\Users\\\\JUN\\\\my-first-project\\\\book-writing-ai\\\\prompts\")",
+      "Bash(start \"\" \"c:\\\\Users\\\\JUN\\\\Documents\\\\Obsidian Vault\\\\6주_책쓰기_최종_커리큘럼_통합본.md\")",
+      "Bash(python -c:*)",
+      "Bash(chcp:*)",
+      "Bash(for file in *.md)",
+      "Bash(do if [ -f \"md파일/md파일/$file\" ])",
+      "Bash(then echo \"DUPLICATE: $file\" fi done)",
+      "WebFetch(domain:www.notion.so)",
+      "Bash(done)",
+      "Bash(pip show:*)",
+      "Bash(pip install:*)",
+      "Bash(python create_docx.py:*)"
+    ]
+  }
+}

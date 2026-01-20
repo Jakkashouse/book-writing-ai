@@ -1,0 +1,457 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 사용자 모델
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  projects      BookProject[]
+  payments      Payment[]
+  subscriptions Subscription[]
+
+  @@map("users")
+}
+
+// OAuth 계정 정보
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// 세션 정보
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// 이메일 인증 토큰
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// 책 프로젝트
+model BookProject {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String?
+  description String?
+  status      ProjectStatus @default(PLANNING)
+  genre       String?
+  targetAudience String?
+  keywords    String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapters    Chapter[]
+  toc         TableOfContents[]
+  drafts      Draft[]
+  proposals   Proposal[]
+
+  @@map("book_projects")
+}
+
+enum ProjectStatus {
+  PLANNING     
+  OUTLINING    
+  WRITING      
+  EDITING      
+  COMPLETED    
+}
+
+// 목차
+model TableOfContents {
+  id        String   @id @default(cuid())
+  projectId String
+  order     Int
+  title     String
+  subtitle  String?
+  content   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   BookProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("table_of_contents")
+}
+
+// 챕터
+model Chapter {
+  id        String   @id @default(cuid())
+  projectId String
+  order     Int
+  title     String
+  content   String?
+  wordCount Int      @default(0)
+  status    ChapterStatus @default(DRAFT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   BookProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("chapters")
+}
+
+enum ChapterStatus {
+  DRAFT        
+  REVIEWING    
+  COMPLETED    
+}
+
+// 초안
+model Draft {
+  id        String   @id @default(cuid())
+  projectId String
+  version   Int
+  content   String
+  wordCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   BookProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("drafts")
+}
+
+// 출판 기획서
+model Proposal {
+  id           String   @id @default(cuid())
+  projectId    String
+  title        String
+  content      String
+  marketAnalysis String?
+  targetReader  String?
+  uniqueValue   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project      BookProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("proposals")
+}
+
+// 프롬프트 템플릿
+model PromptTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    PromptCategory
+  template    String   @db.Text
+  variables   String[]
+  tags        String[]
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  usageCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  usageLogs   PromptUsageLog[]
+  favorites   PromptFavorite[]
+
+  @@map("prompt_templates")
+}
+
+enum PromptCategory {
+  TITLE_TOC        // 제목/목차 기획
+  DRAFT            // 초안 작성
+  EDITING          // 원고 교정/진단
+  PROPOSAL         // 출판 제안서
+  MARKETING        // 마케팅/홍보
+  COACHING         // 코칭/피드백
+  WORKFLOW         // 워크플로우/템플릿
+  BUSINESS         // 비즈니스/계약
+}
+
+// 프롬프트 사용 기록
+model PromptUsageLog {
+  id         String   @id @default(cuid())
+  userId     String
+  promptId   String
+  variables  Json?
+  result     String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  prompt     PromptTemplate @relation(fields: [promptId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([promptId])
+  @@map("prompt_usage_logs")
+}
+
+// 프롬프트 즐겨찾기
+model PromptFavorite {
+  id        String   @id @default(cuid())
+  userId    String
+  promptId  String
+  createdAt DateTime @default(now())
+
+  prompt    PromptTemplate @relation(fields: [promptId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, promptId])
+  @@index([userId])
+  @@map("prompt_favorites")
+}
+
+// 결제 정보
+model Payment {
+  id              String   @id @default(cuid())
+  userId          String
+  subscriptionId  String?
+  orderId         String   @unique
+  orderName       String
+  amount          Int
+  status          PaymentStatus @default(PENDING)
+  method          String?
+  approvedAt      DateTime?
+  paymentKey      String?
+  cancelReason    String?
+  cancelledAt     DateTime?
+  failReason      String?
+  receiptUrl      String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING      
+  COMPLETED    
+  FAILED       
+  CANCELLED    
+}
+
+// 구독 정보
+model Subscription {
+  id                String   @id @default(cuid())
+  userId            String
+  plan              SubscriptionPlan
+  status            SubscriptionStatus @default(ACTIVE)
+  startDate         DateTime @default(now())
+  endDate           DateTime?
+  autoRenew         Boolean  @default(true)
+  trialEndsAt       DateTime?
+  billingCycleStart DateTime?
+  billingCycleEnd   DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE       
+  EXPIRED      
+  CANCELLED    
+}
+
+// AI 사용 로그
+model AIUsageLog {
+  id           String   @id @default(cuid())
+  userId       String
+  endpoint     String   // API endpoint path
+  promptType   String   // title, toc, draft, proposal, chat, etc
+  model        String   @default("claude-3-5-sonnet-20241022")
+  inputTokens  Int
+  outputTokens Int
+  totalTokens  Int
+  cost         Float    // 비용 (달러)
+  duration     Int?     // 응답 시간 (밀리초)
+  success      Boolean  @default(true)
+  errorMessage String?  @db.Text
+  metadata     Json?    // 추가 정보
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([endpoint])
+  @@index([promptType])
+  @@map("ai_usage_logs")
+}
+
+// 학습 진도
+model LearningProgress {
+  id              String   @id @default(cuid())
+  userId          String
+  projectId       String
+  week            Int
+  progress        Float    @default(0) // 0-100
+  wordCount       Int      @default(0)
+  assignmentsDone Int      @default(0)
+  assignmentsTotal Int     @default(0)
+  lastAccessAt    DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, projectId, week])
+  @@map("learning_progress")
+}
+
+// AI 챗봇 사용 내역
+model ChatbotUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String?
+  question  String
+  answer    String
+  weekUsed  Int      // 해당 주차
+  createdAt DateTime @default(now())
+
+  @@map("chatbot_usage")
+}
+
+// 챗봇 사용량 할당
+model ChatbotQuota {
+  id           String   @id @default(cuid())
+  userId       String
+  weekStart    DateTime
+  weekEnd      DateTime
+  usedCount    Int      @default(0)
+  totalCount   Int      @default(20) // 주 20회
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, weekStart])
+  @@map("chatbot_quota")
+}
+
+// 1:1 컨설팅
+model Consultation {
+  id            String            @id @default(cuid())
+  userId        String
+  projectId     String?
+  scheduledAt   DateTime
+  duration      Int               @default(60) // 분
+  status        ConsultationStatus @default(SCHEDULED)
+  meetingLink   String?
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@map("consultations")
+}
+
+enum ConsultationStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+// 컨설팅 할당
+model ConsultationQuota {
+  id           String   @id @default(cuid())
+  userId       String
+  programStart DateTime
+  programEnd   DateTime
+  usedCount    Int      @default(0)
+  totalCount   Int      @default(2) // 6주 중 2회
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, programStart])
+  @@map("consultation_quota")
+}
+
+// 활동 로그
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String?
+  activityType String  // "draft", "edit", "chat", "login" 등
+  metadata    String?  // JSON
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("activity_logs")
+}
+
+// 알림
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  actionUrl String?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  ASSIGNMENT_DUE      // 과제 마감 임박
+  CRISIS_ALERT        // 위기 상황
+  MILESTONE           // 마일스톤 달성
+  CONSULTATION_REMINDER // 컨설팅 일정 알림
+  SYSTEM              // 시스템 공지
+}
+
+// 마일스톤
+model Milestone {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String
+  type        String   // "first_chapter", "50_percent", "completion" 등
+  title       String
+  description String?
+  achievedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@map("milestones")
+}

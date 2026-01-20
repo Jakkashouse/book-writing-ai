@@ -30,7 +30,15 @@
       "Bash(git rev-parse:*)",
       "Bash(git config:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(gh auth status:*)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npm install:*)",
+      "Bash(npx prisma init:*)",
+      "Bash(cat:*)",
+      "Bash(xargs:*)",
+      "Bash(start \"\" \"C:\\\\Users\\\\JUN\\\\my-first-project\\\\book-writing-ai\\\\prompts\\\\landing-page.html\")",
+      "Bash(node -e:*)"
     ]
   }
 }

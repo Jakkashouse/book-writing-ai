@@ -1,0 +1,50 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Nanum+Myeongjo:wght@400;700&display=swap');
+
+:root {
+  --primary: #E8A849;
+  --primary-dark: #D4942E;
+  --primary-light: #FFF5E6;
+  --accent: #C75B39;
+  --text-dark: #2D2A26;
+  --text-medium: #5A554E;
+  --text-light: #8A8580;
+  --bg-cream: #FFFCF7;
+  --bg-warm: #FDF8F2;
+  --white: #FFFFFF;
+  --success: #4A9B7F;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-accent: var(--accent);
+  --color-text-dark: var(--text-dark);
+  --color-text-medium: var(--text-medium);
+  --color-text-light: var(--text-light);
+  --color-bg-cream: var(--bg-cream);
+  --color-bg-warm: var(--bg-warm);
+  --color-success: var(--success);
+  --font-sans: 'Noto Sans KR', var(--font-geist-sans), sans-serif;
+  --font-serif: 'Nanum Myeongjo', serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-cream);
+  color: var(--text-dark);
+  font-family: 'Noto Sans KR', sans-serif;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}

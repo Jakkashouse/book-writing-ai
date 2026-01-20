@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>책쓰기 6주 완성 프로그램 - 출간률 99% | 월 1,000만원 자동 수익</title>
+    <meta name="description" content="3년째 미루던 책, 단 6주 만에 완성하고 월 1,000만원 자동 수익 만드는 법. 출간률 99%, 초고 완성률 87%, 강의 전환율 73%. 52명이 증명한 시스템.">
+
+    <!-- Open Graph Meta Tags (SNS 공유 시) -->
+    <meta property="og:title" content="책쓰기 6주 완성 프로그램 - 출간률 99%">
+    <meta property="og:description" content="3년째 미루던 책, 단 6주 만에 완성하고 월 1,000만원 자동 수익 만드는 법">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630/004E89/FFFFFF?text=출간률+99%25">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== RESET & BASE STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            color: #2B2D42;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ===== TYPOGRAPHY ===== */
+        h1, h2, h3, h4 {
+            font-weight: 900;
+            line-height: 1.3;
+        }
+
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.5rem; }
+        h4 { font-size: 1.25rem; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.75rem; }
+            h2 { font-size: 1.5rem; }
+            h3 { font-size: 1.25rem; }
+            h4 { font-size: 1.1rem; }
+        }
+
+        /* ===== LAYOUT ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        section {
+            padding: 80px 0;
+        }
+
+        @media (max-width: 768px) {
+            section {
+                padding: 50px 0;
+            }
+        }
+
+        /* ===== COLORS ===== */
+        .bg-white { background-color: #FFFFFF; }
+        .bg-light { background-color: #F8F9FA; }
+        .bg-primary { background-color: #FF6B35; }
+        .bg-secondary { background-color: #004E89; }
+        .bg-accent { background-color: #FFD23F; }
+
+        .text-primary { color: #FF6B35; }
+        .text-secondary { color: #004E89; }
+        .text-accent { color: #FFD23F; }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            display: inline-block;
+            padding: 20px 40px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8C61 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-large {
+            padding: 25px 50px;
+            font-size: 1.5rem;
+            width: 100%;
+            max-width: 600px;
+            display: block;
+            margin: 30px auto;
+        }
+
+        @media (max-width: 768px) {
+            .btn {
+                padding: 15px 30px;
+                font-size: 1rem;
+            }
+            .btn-large {
+                padding: 20px 40px;
+                font-size: 1.25rem;
+            }
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            background: linear-gradient(135deg, #004E89 0%, #0066B2 100%);
+            color: white;
+            text-align: center;
+            padding: 100px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="none"/><path d="M0 50 Q 25 25, 50 50 T 100 50" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/></svg>') repeat;
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            margin-bottom: 20px;
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 60px 0;
+            }
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* ===== PROBLEM SECTION ===== */
+        .problem-checklist {
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        .problem-item {
+            background: white;
+            padding: 20px 30px;
+            margin: 15px 0;
+            border-radius: 15px;
+            border-left: 5px solid #FF6B35;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .problem-item:hover {
+            transform: translateX(10px);
+        }
+
+        .shock-stat {
+            text-align: center;
+            margin: 50px 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8C61 100%);
+            color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+        }
+
+        .shock-stat h3 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        /* ===== SOLUTION SECTION ===== */
+        .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin: 50px 0;
+        }
+
+        .solution-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .solution-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        }
+
+        .solution-card h3 {
+            color: #FF6B35;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .comparison {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .comparison.wrong {
+            background: #FFE8E8;
+            border-left: 4px solid #FF4444;
+        }
+
+        .comparison.right {
+            background: #E8F5E9;
+            border-left: 4px solid #4CAF50;
+        }
+
+        /* ===== PROOF SECTION ===== */
+        .proof-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .proof-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .proof-number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #FF6B35;
+            margin-bottom: 10px;
+        }
+
+        .proof-label {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .revenue-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .revenue-card {
+            background: linear-gradient(135deg, #FFD23F 0%, #FFF176 100%);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(255, 210, 63, 0.3);
+        }
+
+        .revenue-amount {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #004E89;
+            margin: 15px 0;
+        }
+
+        /* ===== CURRICULUM SECTION ===== */
+        .week-card {
+            background: white;
+            margin: 40px 0;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .week-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .week-header {
+            background: linear-gradient(135deg, #004E89 0%, #0066B2 100%);
+            color: white;
+            padding: 30px;
+        }
+
+        .week-body {
+            padding: 30px;
+        }
+
+        .value-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .value-list li {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1rem;
+        }
+
+        .value-list li:last-child {
+            border-bottom: none;
+        }
+
+        .value-icon {
+            color: #FF6B35;
+            margin-right: 10px;
+            font-weight: 700;
+        }
+
+        /* ===== BONUS SECTION ===== */
+        .bonus-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .bonus-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #FFD23F;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .bonus-value {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: #FF6B35;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .bonus-card h4 {
+            margin: 20px 0 15px 0;
+            color: #004E89;
+        }
+
+        .total-value {
+            text-align: center;
+            margin: 50px 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8C61 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 2rem;
+            font-weight: 900;
+        }
+
+        /* ===== TESTIMONIAL SECTION ===== */
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .testimonial-card {
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .testimonial-card::before {
+            content: '"';
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            font-size: 5rem;
+            color: #FFD23F;
+            opacity: 0.3;
+            font-family: Georgia, serif;
+        }
+
+        .testimonial-text {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            font-style: italic;
+            position: relative;
+            z-index: 1;
+        }
+
+        .testimonial-author {
+            font-weight: 700;
+            color: #004E89;
+        }
+
+        .testimonial-result {
+            color: #FF6B35;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        /* ===== INSTRUCTOR SECTION ===== */
+        .instructor-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 50px;
+            align-items: center;
+            margin: 50px 0;
+        }
+
+        @media (max-width: 768px) {
+            .instructor-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .instructor-achievements {
+            list-style: none;
+        }
+
+        .instructor-achievements li {
+            padding: 15px 0;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .achievement-icon {
+            color: #4CAF50;
+            margin-right: 10px;
+            font-weight: 700;
+        }
+
+        .instructor-quote {
+            background: #F8F9FA;
+            padding: 40px;
+            border-radius: 20px;
+            border-left: 5px solid #FF6B35;
+            margin: 30px 0;
+            font-size: 1.25rem;
+            font-style: italic;
+        }
+
+        /* ===== URGENCY SECTION ===== */
+        .urgency-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin: 50px 0;
+        }
+
+        @media (max-width: 768px) {
+            .urgency-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loss-frame, .gain-frame {
+            padding: 40px;
+            border-radius: 20px;
+        }
+
+        .loss-frame {
+            background: #FFE8E8;
+            border: 3px solid #FF4444;
+        }
+
+        .gain-frame {
+            background: #E8F5E9;
+            border: 3px solid #4CAF50;
+        }
+
+        .loss-frame h3, .gain-frame h3 {
+            margin-bottom: 20px;
+        }
+
+        .loss-frame ul li, .gain-frame ul li {
+            padding: 10px 0;
+            font-size: 1.1rem;
+        }
+
+        /* ===== PRICING SECTION ===== */
+        .pricing-container {
+            max-width: 800px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        .value-breakdown, .revenue-potential {
+            background: white;
+            padding: 40px;
+            margin: 30px 0;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .value-breakdown ul, .revenue-potential ul {
+            list-style: none;
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .value-breakdown li, .revenue-potential li {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .price-display {
+            background: linear-gradient(135deg, #FFD23F 0%, #FFF176 100%);
+            padding: 60px;
+            border-radius: 30px;
+            margin: 40px 0;
+        }
+
+        .old-price {
+            font-size: 1.5rem;
+            text-decoration: line-through;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .new-price {
+            font-size: 4rem;
+            font-weight: 900;
+            color: #FF6B35;
+            margin: 20px 0;
+        }
+
+        .guarantee {
+            background: #E8F5E9;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2E7D32;
+        }
+
+        /* ===== FAQ SECTION ===== */
+        .faq-container {
+            max-width: 900px;
+            margin: 50px auto;
+        }
+
+        .faq-item {
+            background: white;
+            margin: 20px 0;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .faq-question {
+            background: #F8F9FA;
+            padding: 25px 30px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background: #E9ECEF;
+        }
+
+        .faq-question::after {
+            content: '+';
+            position: absolute;
+            right: 30px;
+            font-size: 2rem;
+            color: #FF6B35;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-question.active::after {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            padding: 0 30px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-answer.active {
+            padding: 25px 30px;
+            max-height: 500px;
+        }
+
+        .faq-answer p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        /* ===== FINAL CTA SECTION ===== */
+        .final-cta {
+            background: linear-gradient(135deg, #004E89 0%, #0066B2 100%);
+            color: white;
+            text-align: center;
+            padding: 100px 0;
+        }
+
+        .final-cta h2 {
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+        }
+
+        .final-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 900px;
+            margin: 40px auto;
+        }
+
+        .final-stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: #2B2D42;
+            color: white;
+            padding: 50px 0 30px 0;
+            text-align: center;
+        }
+
+        .footer-links {
+            margin: 30px 0;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+        }
+
+        .footer-legal {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* ===== UTILITIES ===== */
+        .text-center { text-align: center; }
+        .mb-20 { margin-bottom: 20px; }
+        .mb-30 { margin-bottom: 30px; }
+        .mb-40 { margin-bottom: 40px; }
+        .mt-40 { margin-top: 40px; }
+
+        /* ===== SCROLL TO TOP BUTTON ===== */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #FF6B35;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 107, 53, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-top:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== HERO SECTION ===== -->
+    <section class="hero">
+        <div class="container hero-content">
+            <h1 class="fade-in-up">3년째 미루던 책, 단 6주 만에 완성하고<br>월 1,000만원 자동 수익 만드는 법</h1>
+            <p class="hero-subtitle fade-in-up">출간률 99% | 초고 완성률 87% | 강의 전환율 73%<br>52명의 평범한 사람들이 이미 증명했습니다.</p>
+            <div class="hero-stats fade-in-up">
+                <div class="hero-stat">출간률 <strong>99%</strong></div>
+                <div class="hero-stat">초고 완성률 <strong>87%</strong></div>
+                <div class="hero-stat">강의 전환율 <strong>73%</strong></div>
+            </div>
+            <a href="#pricing" class="btn btn-primary btn-large fade-in-up">🎁 무료 웨비나 신청하기 (선착순 100명)</a>
+        </div>
+    </section>
+
+    <!-- ===== PROBLEM SECTION ===== -->
+    <section class="bg-light">
+        <div class="container">
+            <h2 class="text-center mb-40">이런 고민, 당신만 하는 게 아닙니다.</h2>
+            <div class="problem-checklist">
+                <div class="problem-item">☑️ "언젠가는 책을 쓰겠지..." 3년째 미루고 있다</div>
+                <div class="problem-item">☑️ 제목만 10개 바꿨는데 아직도 마음에 안 든다</div>
+                <div class="problem-item">☑️ 목차를 어떻게 짜야 할지 막막하다</div>
+                <div class="problem-item">☑️ 글을 쓰기 시작하면 3줄 쓰고 멈춘다</div>
+                <div class="problem-item">☑️ 출판사에 보낼 기획서가 뭔지도 모른다</div>
+                <div class="problem-item">☑️ 책을 써도 돈이 될지 의문이다</div>
+                <div class="problem-item">☑️ 내 책으로 어떻게 수익을 만드는지 모른다</div>
+            </div>
+            <div class="shock-stat">
+                <h3>99%는 책쓰기를 시작도 못하고 포기합니다.</h3>
+                <p>그런데 왜 우리 수강생은 <strong>출간률 99%</strong>일까요?</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SOLUTION SECTION ===== -->
+    <section class="bg-white">
+        <div class="container">
+            <h2 class="text-center mb-40">"재능이 아니라 '시스템'입니다."</h2>
+            <div class="solution-grid">
+                <div class="solution-card">
+                    <h3>1️⃣ 제목과 목차가 80%다</h3>
+                    <div class="comparison wrong">
+                        <strong>❌ 일반인:</strong> 무작정 글부터 쓴다 → 완성률 5%
+                    </div>
+                    <div class="comparison right">
+                        <strong>✅ 우리 시스템:</strong> 제목 자동 생성 엑셀 + 5부 구조 템플릿 → 완성률 87%
+                    </div>
+                </div>
+
+                <div class="solution-card">
+                    <h3>2️⃣ AI 80% + 나 20%</h3>
+                    <div class="comparison wrong">
+                        <strong>❌ 일반인:</strong> 13.5시간 걸려 1챕터 완성
+                    </div>
+                    <div class="comparison right">
+                        <strong>✅ 우리 시스템:</strong> 황금 프롬프트 7종 → 1.5시간에 1챕터 완성 (9배 단축)
+                    </div>
+                </div>
+
+                <div class="solution-card">
+                    <h3>3️⃣ 책은 명함, 진짜 수익은 강의와 코칭</h3>
+                    <div class="comparison wrong">
+                        <strong>❌ 일반인:</strong> 책 200권 팔아 34만원 벌고 끝
+                    </div>
+                    <div class="comparison right">
+                        <strong>✅ 우리 시스템:</strong> 책 → 강의 → 웨비나 → 코칭 파이프라인 → 연 1억 수익
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PROOF SECTION ===== -->
+    <section class="bg-light">
+        <div class="container">
+            <h2 class="text-center mb-40">"말보다 숫자가 증명합니다."</h2>
+            <h3 class="text-center mb-30">프로그램 성과 데이터</h3>
+            <div class="proof-grid">
+                <div class="proof-card">
+                    <div class="proof-number">52명</div>
+                    <div class="proof-label">수강생</div>
+                </div>
+                <div class="proof-card">
+                    <div class="proof-number">100%</div>
+                    <div class="proof-label">제목 완성</div>
+                </div>
+                <div class="proof-card">
+                    <div class="proof-number">95%</div>
+                    <div class="proof-label">목차 완성</div>
+                </div>
+                <div class="proof-card">
+                    <div class="proof-number">87%</div>
+                    <div class="proof-label">초고 완성</div>
+                </div>
+                <div class="proof-card">
+                    <div class="proof-number">92%</div>
+                    <div class="proof-label">기획서 완성</div>
+                </div>
+                <div class="proof-card">
+                    <div class="proof-number">99%</div>
+                    <div class="proof-label">출간률 (6개월 내)</div>
+                </div>
+                <div class="proof-card">
+                    <div class="proof-number">73%</div>
+                    <div class="proof-label">강의 전환</div>
+                </div>
+                <div class="proof-card">
+                    <div class="proof-number">9.4/10</div>
+                    <div class="proof-label">만족도</div>
+                </div>
+            </div>
+
+            <h3 class="text-center mb-30 mt-40">실제 수익 데이터</h3>
+            <div class="revenue-grid">
+                <div class="revenue-card">
+                    <div>웨비나 1회 수익</div>
+                    <div class="revenue-amount">3,000만원</div>
+                    <div>(10명 전환)</div>
+                </div>
+                <div class="revenue-card">
+                    <div>월 자동 수익</div>
+                    <div class="revenue-amount">1,000만원</div>
+                    <div>(월 3명 전환)</div>
+                </div>
+                <div class="revenue-card">
+                    <div>1인 출판사 6개월 매출</div>
+                    <div class="revenue-amount">7,000만원</div>
+                    <div>(실제 강사 사례)</div>
+                </div>
+                <div class="revenue-card">
+                    <div>예비창업패키지 지원금</div>
+                    <div class="revenue-amount">4,500만원</div>
+                    <div>(실제 수혜 사례)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CURRICULUM SECTION ===== -->
+    <section class="bg-white">
+        <div class="container">
+            <h2 class="text-center mb-40">"6주면 됩니다. 더도 말고 덜도 말고."</h2>
+
+            <!-- Week 1 -->
+            <div class="week-card">
+                <div class="week-header">
+                    <h3>📍 1주차: "3년째 미루던 책, 단 하루 만에 제목과 목차 완성"</h3>
+                </div>
+                <div class="week-body">
+                    <h4 class="text-primary mb-20">💰 획득 가치:</h4>
+                    <ul class="value-list">
+                        <li><span class="value-icon">⏱️</span> 시간 절약: 3년 → 1일</li>
+                        <li><span class="value-icon">📈</span> 출판사 계약 가능성 80% 상승</li>
+                        <li><span class="value-icon">🎯</span> 제목 자동 생성 엑셀로 30분 만에 10개 완성</li>
+                        <li><span class="value-icon">🎯</span> 5부 구조 템플릿으로 1일 만에 40꼭지 완성</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Week 2 -->
+            <div class="week-card">
+                <div class="week-header">
+                    <h3>📍 2주차: "13.5시간 걸릴 일을 1.5시간에 끝내는 AI 초고 완성법"</h3>
+                </div>
+                <div class="week-body">
+                    <h4 class="text-primary mb-20">💰 획득 가치:</h4>
+                    <ul class="value-list">
+                        <li><span class="value-icon">⏱️</span> 작업 시간 90% 단축 (13.5시간 → 1.5시간)</li>
+                        <li><span class="value-icon">📈</span> 초고 완성률 87% 달성</li>
+                        <li><span class="value-icon">🎯</span> 황금 프롬프트 7종으로 작업 시간 9배 단축</li>
+                        <li><span class="value-icon">🎯</span> 5+5 시스템으로 말하듯 글쓰기 (첫 챕터 완성)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Week 3 -->
+            <div class="week-card">
+                <div class="week-header">
+                    <h3>📍 3주차: "출판사 답장률 5%에서 85%로 올리는 5분 기획서"</h3>
+                </div>
+                <div class="week-body">
+                    <h4 class="text-primary mb-20">💰 획득 가치:</h4>
+                    <ul class="value-list">
+                        <li><span class="value-icon">📈</span> 출판사 계약 확률 17배 상승</li>
+                        <li><span class="value-icon">💵</span> 계약금 500만원 손해 방지</li>
+                        <li><span class="value-icon">🎯</span> 5분 기획서로 계약률 300배 상승</li>
+                        <li><span class="value-icon">🎯</span> 출판사 100곳 명단 + 동시 제안 전략</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Week 4 -->
+            <div class="week-card">
+                <div class="week-header">
+                    <h3>📍 4주차: "출간일 하루만에 베스트셀러 만들고 강의료 30만원 받기"</h3>
+                </div>
+                <div class="week-body">
+                    <h4 class="text-primary mb-20">💰 획득 가치:</h4>
+                    <ul class="value-list">
+                        <li><span class="value-icon">📈</span> 출간일 판매 4배 증가 (30부 → 120부)</li>
+                        <li><span class="value-icon">💵</span> 책 200권 판매 = 강의 1회 수익</li>
+                        <li><span class="value-icon">🎯</span> 출간일 100부 판매로 베스트셀러 만들기</li>
+                        <li><span class="value-icon">🎯</span> 책→강의→컨설팅 파이프라인 (연 1,920만원)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Week 5 -->
+            <div class="week-card">
+                <div class="week-header">
+                    <h3>📍 5주차: "웨비나 1회로 3,000만원 벌고 매달 1,000만원씩 자동 수익 만들기"</h3>
+                </div>
+                <div class="week-body">
+                    <h4 class="text-primary mb-20">💰 획득 가치:</h4>
+                    <ul class="value-list">
+                        <li><span class="value-icon">💵</span> 첫 웨비나 3,000만원 (10명 전환)</li>
+                        <li><span class="value-icon">💵</span> 이후 매달 1,000만원 자동 수익 (월 3명 전환)</li>
+                        <li><span class="value-icon">💵</span> 연 1억 2천만원 수익 구조</li>
+                        <li><span class="value-icon">🎯</span> 웨비나 시스템 전체 확보 (스크립트+PPT 62페이지 복붙 가능)</li>
+                        <li><span class="value-icon">🎯</span> 책쓰기 코치 상품 설계로 월 1,000만원 수익 구조</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Week 6 -->
+            <div class="week-card">
+                <div class="week-header">
+                    <h3>📍 6주차: "1인 출판사로 6개월 만에 7,000만원 매출 만들기"</h3>
+                </div>
+                <div class="week-body">
+                    <h4 class="text-primary mb-20">💰 획득 가치:</h4>
+                    <ul class="value-list">
+                        <li><span class="value-icon">💵</span> 인세 수익 6배 증가 (1,500원 → 9,000원)</li>
+                        <li><span class="value-icon">💵</span> 6개월 매출 7,000만원 달성 (실제 강사 사례)</li>
+                        <li><span class="value-icon">💵</span> 지원금 4,500만원 확보</li>
+                        <li><span class="value-icon">🎯</span> 1인 출판사로 수익 6배 상승</li>
+                        <li><span class="value-icon">🎯</span> 예비창업패키지 4,500만원 지원금 신청 방법</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== BONUS SECTION ===== -->
+    <section class="bg-light">
+        <div class="container">
+            <h2 class="text-center mb-40">"프로그램 등록 즉시 받는 6가지 선물"</h2>
+            <div class="bonus-grid">
+                <div class="bonus-card">
+                    <div class="bonus-value">50만원</div>
+                    <h4>📊 제목 자동 생성 엑셀</h4>
+                    <p>30분 만에 10개 제목 완성<br>제목 공식 10가지 내장</p>
+                </div>
+                <div class="bonus-card">
+                    <div class="bonus-value">50만원</div>
+                    <h4>📋 5부 구조 템플릿</h4>
+                    <p>1일 만에 40꼭지 완성<br>복붙만 하면 끝</p>
+                </div>
+                <div class="bonus-card">
+                    <div class="bonus-value">100만원</div>
+                    <h4>🤖 황금 프롬프트 7종</h4>
+                    <p>작업 시간 9배 단축<br>ChatGPT 복붙용</p>
+                </div>
+                <div class="bonus-card">
+                    <div class="bonus-value">50만원</div>
+                    <h4>📄 5분 기획서 템플릿</h4>
+                    <p>계약률 300배 상승<br>출판사 100곳 명단 포함</p>
+                </div>
+                <div class="bonus-card">
+                    <div class="bonus-value">300만원</div>
+                    <h4>🎤 웨비나 시스템 전체</h4>
+                    <p>90분 웨비나 스크립트 (복붙 가능)<br>PPT 62페이지 (복붙 가능)</p>
+                </div>
+                <div class="bonus-card">
+                    <div class="bonus-value">200만원</div>
+                    <h4>💼 1인 출판사 매뉴얼</h4>
+                    <p>수익 6배 상승 비법<br>예비창업패키지 4,500만원 신청 방법</p>
+                </div>
+            </div>
+            <div class="total-value">
+                총 가치: 750만원
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== TESTIMONIALS SECTION ===== -->
+    <section class="bg-white">
+        <div class="container">
+            <h2 class="text-center mb-40">"52명의 평범한 사람들이 증명했습니다."</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"27년째 책쓰기 포기했는데, 목차 시스템으로 2달 만에 출간했어요."</p>
+                    <div class="testimonial-author">— 박○○님</div>
+                    <div class="testimonial-result">완성률 100%</div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"70대인데 5+5 시스템으로 30분 만에 주제 3개 찾았어요."</p>
+                    <div class="testimonial-author">— 김○○님</div>
+                    <div class="testimonial-result">초고 완성률 87%</div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"5분 기획서로 출판사 3곳에서 동시 제안 받았어요."</p>
+                    <div class="testimonial-author">— 이○○님</div>
+                    <div class="testimonial-result">계약률 100%</div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"첫 웨비나에서 3,000만원 벌었어요. 이제 매달 1,000만원 자동 수익 나와요."</p>
+                    <div class="testimonial-author">— 강사 본인</div>
+                    <div class="testimonial-result">2025년 1월 실제 사례</div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"1인 출판사 6개월 운영해서 7,000만원 매출 만들었어요."</p>
+                    <div class="testimonial-author">— 강사 본인</div>
+                    <div class="testimonial-result">실제 사례</div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"6개월 만에 600부 판매해서 순수익 500만원 벌었어요."</p>
+                    <div class="testimonial-author">— 수강생 사례 1</div>
+                    <div class="testimonial-result">1인 출판사 수익</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== INSTRUCTOR SECTION ===== -->
+    <section class="bg-light">
+        <div class="container">
+            <h2 class="text-center mb-40">"저도 평범했습니다. 그래서 시스템을 만들었습니다."</h2>
+            <div class="instructor-content">
+                <div>
+                    <div style="width: 100%; height: 400px; background: linear-gradient(135deg, #004E89 0%, #0066B2 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 700;">
+                        강사 프로필
+                    </div>
+                </div>
+                <div>
+                    <h3 class="mb-30">강사 실적</h3>
+                    <ul class="instructor-achievements">
+                        <li><span class="achievement-icon">✅</span> 책쓰기 6주 완성 프로그램 52명 배출</li>
+                        <li><span class="achievement-icon">✅</span> 출간률 99% (딱 1명 제외)</li>
+                        <li><span class="achievement-icon">✅</span> 초고 완성률 87% (일반인 5%의 17배)</li>
+                        <li><span class="achievement-icon">✅</span> 강의 전환율 73%</li>
+                        <li><span class="achievement-icon">✅</span> 2025년 1월 첫 웨비나에서 3,000만원 수익</li>
+                        <li><span class="achievement-icon">✅</span> 이후 매달 1,000만원 자동 수익</li>
+                        <li><span class="achievement-icon">✅</span> 1인 출판사 6개월 운영해서 7,000만원 매출</li>
+                        <li><span class="achievement-icon">✅</span> 예비창업패키지 4,500만원 지원금 수혜</li>
+                        <li><span class="achievement-icon">✅</span> 만족도 9.4/10</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="instructor-quote">
+                "재능이 없어서가 아닙니다. 시스템이 없어서입니다.<br>
+                저는 시스템을 만들었고, 52명이 증명했습니다.<br>
+                이제 당신 차례입니다."
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== URGENCY SECTION ===== -->
+    <section class="bg-white">
+        <div class="container">
+            <h2 class="text-center mb-40">"지금 시작하지 않으면 3년 후에도 똑같습니다."</h2>
+            <div class="urgency-grid">
+                <div class="loss-frame">
+                    <h3>❌ 지금 시작하지 않으면...</h3>
+                    <ul>
+                        <li>3년 후에도 "언젠가는..."</li>
+                        <li>책 없어서 강의료 30만원 못 받음</li>
+                        <li>웨비나 못해서 월 1,000만원 놓침</li>
+                        <li>1인 출판사 몰라서 인세 6배 손해</li>
+                        <li>예비창업패키지 몰라서 4,500만원 놓침</li>
+                    </ul>
+                </div>
+                <div class="gain-frame">
+                    <h3>✅ 지금 시작하면...</h3>
+                    <ul>
+                        <li>6주 후: 책 1권 완성</li>
+                        <li>3개월 후: 강의 10건 (300만원)</li>
+                        <li>6개월 후: 월 1,000만원 자동 수익</li>
+                        <li>1년 후: 연 1억 수익 구조</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PRICING SECTION ===== -->
+    <section id="pricing" class="bg-light">
+        <div class="container">
+            <h2 class="text-center mb-40">"투자금 회수 기간: 평균 6개월"</h2>
+            <div class="pricing-container">
+                <div class="value-breakdown">
+                    <h3 class="mb-30">실제 가치 계산</h3>
+                    <ul>
+                        <li><span>제목 자동 생성 엑셀</span> <strong>50만원</strong></li>
+                        <li><span>5부 구조 템플릿</span> <strong>50만원</strong></li>
+                        <li><span>황금 프롬프트 7종</span> <strong>100만원</strong></li>
+                        <li><span>5분 기획서 템플릿</span> <strong>50만원</strong></li>
+                        <li><span>웨비나 시스템 전체</span> <strong>300만원</strong></li>
+                        <li><span>1인 출판사 매뉴얼</span> <strong>200만원</strong></li>
+                    </ul>
+                    <div style="text-align: center; margin-top: 30px; font-size: 1.5rem; font-weight: 700; color: #FF6B35;">
+                        총 가치: 750만원
+                    </div>
+                </div>
+
+                <div class="revenue-potential">
+                    <h3 class="mb-30">실제 수익 계산</h3>
+                    <ul>
+                        <li><span>웨비나 1회 수익</span> <strong>3,000만원</strong></li>
+                        <li><span>월 자동 수익 (12개월)</span> <strong>1억 2천만원</strong></li>
+                        <li><span>1인 출판사 6개월 매출</span> <strong>7,000만원</strong></li>
+                        <li><span>예비창업패키지 지원금</span> <strong>4,500만원</strong></li>
+                    </ul>
+                    <div style="text-align: center; margin-top: 30px; font-size: 1.5rem; font-weight: 700; color: #FF6B35;">
+                        잠재 수익: 2억 이상
+                    </div>
+                </div>
+
+                <div class="price-display">
+                    <div class="old-price">정가: 750만원</div>
+                    <div class="old-price">얼리버드: 500만원</div>
+                    <div class="new-price">오늘만 특가: 397만원</div>
+                    <p style="font-size: 1.2rem; margin-top: 20px;">선착순 100명 한정</p>
+                </div>
+
+                <a href="#" class="btn btn-primary btn-large">🎁 지금 바로 시작하기 (선착순 100명)</a>
+
+                <div class="guarantee">
+                    ✅ 30일 무조건 환불 보장<br>
+                    목차 완성 못하면 100% 환불해드립니다.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FAQ SECTION ===== -->
+    <section class="bg-white">
+        <div class="container">
+            <h2 class="text-center mb-40">자주 묻는 질문</h2>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">글을 잘 못 쓰는데 가능한가요?</div>
+                    <div class="faq-answer">
+                        <p>70대도 5+5 시스템으로 30분 만에 주제 3개 찾았습니다.<br>
+                        AI 80% + 나 20% = 작업 시간 90% 단축.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">시간이 없는데 6주 안에 가능한가요?</div>
+                    <div class="faq-answer">
+                        <p>13.5시간 걸릴 일을 1.5시간에 끝냅니다. (9배 단축)<br>
+                        하루 1시간만 투자하면 됩니다.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">출판사 계약이 안 되면 어떡하죠?</div>
+                    <div class="faq-answer">
+                        <p>5분 기획서로 답장률 5% → 85% (17배 상승).<br>
+                        출간한 사람 기준 계약률 100%입니다.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">책으로 돈을 벌 수 있나요?</div>
+                    <div class="faq-answer">
+                        <p>책은 명함입니다. 진짜 수익은 강의와 코칭입니다.<br>
+                        • 강의 전환율 73%<br>
+                        • 웨비나 1회 수익 3,000만원<br>
+                        • 월 자동 수익 1,000만원<br>
+                        • 연 1억 수익 구조</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">1인 출판사는 어렵지 않나요?</div>
+                    <div class="faq-answer">
+                        <p>강사가 6개월 만에 7,000만원 매출 만들었습니다.<br>
+                        예비창업패키지로 4,500만원 지원금도 받았습니다.<br>
+                        매뉴얼 그대로 따라하면 됩니다.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">환불이 되나요?</div>
+                    <div class="faq-answer">
+                        <p>30일 무조건 환불 보장.<br>
+                        목차 완성 못하면 100% 환불해드립니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FINAL CTA SECTION ===== -->
+    <section class="final-cta">
+        <div class="container">
+            <h2>"3년 후에도 똑같을 건가요?<br>아니면 6주 후 작가가 될 건가요?"</h2>
+            <div class="final-stats">
+                <div class="final-stat">
+                    <strong>출간률 99%</strong>
+                </div>
+                <div class="final-stat">
+                    <strong>초고 완성률 87%</strong>
+                </div>
+                <div class="final-stat">
+                    <strong>강의 전환율 73%</strong>
+                </div>
+                <div class="final-stat">
+                    <strong>만족도 9.4/10</strong>
+                </div>
+                <div class="final-stat">
+                    <strong>투자금 회수 평균 6개월</strong>
+                </div>
+                <div class="final-stat">
+                    <strong>30일 무조건 환불 보장</strong>
+                </div>
+            </div>
+            <a href="#pricing" class="btn btn-primary btn-large">🎁 지금 바로 시작하기 (선착순 100명)</a>
+            <div style="margin-top: 40px; font-size: 1.1rem;">
+                📧 등록 즉시 보너스 6가지 발송<br>
+                📅 1주차 수업 시작: X월 X일<br>
+                💬 이메일 문의: huang1234@naver.com
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="container">
+            <p style="font-size: 1.2rem; margin-bottom: 20px;">책쓰기 6주 완성 프로그램</p>
+            <div class="footer-links">
+                <a href="mailto:huang1234@naver.com">이메일</a>
+                <a href="#">카카오톡</a>
+                <a href="#">인스타그램</a>
+            </div>
+            <div class="footer-legal">
+                사업자등록번호: [번호] | 통신판매업신고: [번호]<br>
+                <a href="#" style="color: white;">개인정보처리방침</a> |
+                <a href="#" style="color: white;">이용약관</a> |
+                <a href="#" style="color: white;">환불정책</a><br><br>
+                © 2025 책쓰기 6주 완성 프로그램. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===== SCROLL TO TOP BUTTON ===== -->
+    <div class="scroll-top" id="scrollTop">
+        ↑
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        // FAQ Toggle
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const answer = question.nextElementSibling;
+                const isActive = answer.classList.contains('active');
+
+                // Close all FAQs
+                document.querySelectorAll('.faq-answer').forEach(a => {
+                    a.classList.remove('active');
+                });
+                document.querySelectorAll('.faq-question').forEach(q => {
+                    q.classList.remove('active');
+                });
+
+                // Open clicked FAQ if it wasn't active
+                if (!isActive) {
+                    answer.classList.add('active');
+                    question.classList.add('active');
+                }
+            });
+        });
+
+        // Scroll to Top Button
+        const scrollTopBtn = document.getElementById('scrollTop');
+
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                scrollTopBtn.classList.add('visible');
+            } else {
+                scrollTopBtn.classList.remove('visible');
+            }
+        });
+
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Smooth Scroll for Anchor Links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Number Counter Animation
+        const animateCounters = () => {
+            const counters = document.querySelectorAll('.proof-number');
+
+            counters.forEach(counter => {
+                const target = counter.textContent;
+                const isPercentage = target.includes('%');
+                const number = parseInt(target.replace(/[^0-9]/g, ''));
+
+                let current = 0;
+                const increment = number / 50;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= number) {
+                        counter.textContent = target;
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current) + (isPercentage ? '%' : '');
+                    }
+                }, 30);
+            });
+        };
+
+        // Intersection Observer for Counter Animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    observer.unobserve(entry.target);
+                }
+            });
+        });
+
+        const proofSection = document.querySelector('.proof-grid');
+        if (proofSection) {
+            observer.observe(proofSection);
+        }
+
+        // Add fade-in-up animation on scroll
+        const fadeElements = document.querySelectorAll('.solution-card, .week-card, .bonus-card, .testimonial-card');
+
+        const fadeObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in-up');
+                    fadeObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        fadeElements.forEach(el => fadeObserver.observe(el));
+    </script>
+</body>
+</html>
