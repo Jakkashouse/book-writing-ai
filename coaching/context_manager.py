@@ -1,0 +1,261 @@
+"""
+대화 컨텍스트 누적 관리
+- session_state 관리
+- 마일스톤 추적
+- JSON 저장/불러오기
+"""
+import json
+import streamlit as st
+from pathlib import Path
+from datetime import datetime
+from config import TOTAL_PHASES, DATA_DIR, SAVE_FILENAME, MILESTONES
+
+# Phase별 진행률 가중치
+# 1단계(발견/제목) 완료 = 40%, 2단계(구조화/목차) 완료 = 80%
+# 3단계(집필) 완료 = 95%, 4단계(마무리) 완료 = 100%
+PHASE_WEIGHTS = {
+    0: 0.0,    # 시작 전
+    1: 0.40,   # 1단계 완료
+    2: 0.80,   # 2단계 완료 (제목+목차 = 80%)
+    3: 0.95,   # 3단계 완료
+    4: 1.00,   # 4단계 완료
+}
+
+
+def init_session_state():
+    """세션 상태 초기화"""
+    defaults = {
+        "messages": [],
+        "current_phase": 1,
+        "current_step": 0,  # 0부터 시작 (3% 버그 수정)
+        "phase_completed": {i: False for i in range(1, TOTAL_PHASES + 1)},
+        "user_data": {},
+        "outputs": {},
+        "initialized": False,
+        "milestones_achieved": [],
+        "pending_milestone": None,
+        "total_user_messages": 0,
+        "action_pending": None,
+        "session_start": datetime.now().isoformat(),
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+
+def add_message(role: str, content: str):
+    """메시지 추가 + 자동 저장"""
+    st.session_state.messages.append({
+        "role": role,
+        "content": content,
+        "phase": st.session_state.current_phase,
+        "timestamp": datetime.now().isoformat(),
+    })
+    if role == "user":
+        st.session_state.total_user_messages += 1
+        _check_message_milestones()
+
+    # 자동 저장 (매 메시지마다)
+    try:
+        save_session_to_file()
+    except Exception:
+        pass  # 저장 실패해도 대화는 계속
+
+
+def get_api_messages() -> list:
+    """LLM API에 전달할 메시지 목록 (최근 대화 중심)"""
+    messages = st.session_state.messages
+    recent = messages[-24:] if len(messages) > 24 else messages
+
+    api_messages = []
+    for msg in recent:
+        api_messages.append({
+            "role": msg["role"],
+            "content": msg["content"],
+        })
+    return api_messages
+
+
+def get_last_assistant_message() -> str:
+    """마지막 AI 응답 텍스트"""
+    for msg in reversed(st.session_state.messages):
+        if msg["role"] == "assistant":
+            return msg["content"]
+    return ""
+
+
+def advance_step():
+    """대화 스텝 증가"""
+    st.session_state.current_step += 1
+
+
+def advance_phase():
+    """다음 Phase로 이동"""
+    current = st.session_state.current_phase
+    st.session_state.phase_completed[current] = True
+
+    # Phase 완료 마일스톤
+    milestone_key = f"phase{current}_done"
+    _trigger_milestone(milestone_key)
+
+    if current < TOTAL_PHASES:
+        st.session_state.current_phase = current + 1
+        st.session_state.current_step = 0
+
+
+def check_phase_complete(response: str) -> bool:
+    """AI 응답에 [PHASE_COMPLETE] 태그가 있는지 확인"""
+    return "[PHASE_COMPLETE]" in response
+
+
+def clean_response(response: str) -> str:
+    """응답에서 시스템 태그 제거"""
+    return response.replace("[PHASE_COMPLETE]", "").strip()
+
+
+def update_user_data(key: str, value):
+    """사용자 데이터 업데이트"""
+    st.session_state.user_data[key] = value
+
+
+def save_output(phase: int, content: str):
+    """Phase별 산출물 저장"""
+    st.session_state.outputs[phase] = content
+
+
+def get_progress_percentage() -> float:
+    """전체 진행률 (0~1), 가중치 적용
+
+    - 아무것도 안 했으면 0%
+    - 1단계 완료 = 40%
+    - 2단계 완료 (제목+목차) = 80%
+    - 3단계 완료 = 95%
+    - 4단계 완료 = 100%
+    - Phase 내에서는 대화 스텝에 따라 서서히 증가
+    """
+    completed_count = sum(1 for v in st.session_state.phase_completed.values() if v)
+    current_phase = st.session_state.current_phase
+    step = st.session_state.current_step
+
+    # 완료된 Phase까지의 기본 진행률
+    base = PHASE_WEIGHTS.get(completed_count, 0.0)
+
+    # 현재 Phase 내 진행도 (0~1)
+    phase_internal = min(step / 7, 1.0) if step > 0 else 0.0
+
+    # 현재 Phase의 구간 크기
+    next_weight = PHASE_WEIGHTS.get(completed_count + 1, 1.0)
+    phase_range = next_weight - base
+
+    return base + (phase_internal * phase_range)
+
+
+def get_stats() -> dict:
+    """현재 세션 통계"""
+    total_msgs = len(st.session_state.messages)
+    user_msgs = st.session_state.total_user_messages
+    assistant_msgs = total_msgs - user_msgs
+
+    total_chars = sum(
+        len(m["content"]) for m in st.session_state.messages
+        if m["role"] == "assistant"
+    )
+
+    return {
+        "total_messages": total_msgs,
+        "user_messages": user_msgs,
+        "assistant_messages": assistant_msgs,
+        "total_chars": total_chars,
+        "phases_completed": sum(1 for v in st.session_state.phase_completed.values() if v),
+        "milestones": len(st.session_state.milestones_achieved),
+    }
+
+
+# ─── 마일스톤 ──────────────────────────────────
+
+def _trigger_milestone(key: str):
+    """마일스톤 달성"""
+    if key not in st.session_state.milestones_achieved and key in MILESTONES:
+        st.session_state.milestones_achieved.append(key)
+        st.session_state.pending_milestone = key
+
+
+def _check_message_milestones():
+    """메시지 수 기반 마일스톤 체크"""
+    count = st.session_state.total_user_messages
+    if count == 1:
+        _trigger_milestone("first_message")
+    elif count == 10:
+        _trigger_milestone("messages_10")
+    elif count == 30:
+        _trigger_milestone("messages_30")
+    elif count == 50:
+        _trigger_milestone("messages_50")
+
+
+def consume_pending_milestone() -> dict | None:
+    """대기 중인 마일스톤 소비 (표시 후 제거)"""
+    key = st.session_state.pending_milestone
+    if key:
+        st.session_state.pending_milestone = None
+        return MILESTONES.get(key)
+    return None
+
+
+# ─── 데이터 저장/불러오기 ──────────────────────
+
+def save_session_to_file():
+    """세션 데이터를 JSON으로 저장"""
+    data_dir = Path(DATA_DIR)
+    data_dir.mkdir(exist_ok=True)
+
+    data = {
+        "messages": st.session_state.messages,
+        "current_phase": st.session_state.current_phase,
+        "current_step": st.session_state.current_step,
+        "phase_completed": {str(k): v for k, v in st.session_state.phase_completed.items()},
+        "user_data": st.session_state.user_data,
+        "outputs": {str(k): v for k, v in st.session_state.outputs.items()},
+        "milestones_achieved": st.session_state.milestones_achieved,
+        "total_user_messages": st.session_state.total_user_messages,
+        "saved_at": datetime.now().isoformat(),
+    }
+
+    filepath = data_dir / SAVE_FILENAME
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    return filepath
+
+
+def load_session_from_file() -> bool:
+    """JSON에서 세션 데이터 불러오기"""
+    filepath = Path(DATA_DIR) / SAVE_FILENAME
+    if not filepath.exists():
+        return False
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    st.session_state.messages = data.get("messages", [])
+    st.session_state.current_phase = data.get("current_phase", 1)
+    st.session_state.current_step = data.get("current_step", 0)
+    st.session_state.phase_completed = {int(k): v for k, v in data.get("phase_completed", {}).items()}
+    st.session_state.user_data = data.get("user_data", {})
+    st.session_state.outputs = {int(k): v for k, v in data.get("outputs", {}).items()}
+    st.session_state.milestones_achieved = data.get("milestones_achieved", [])
+    st.session_state.total_user_messages = data.get("total_user_messages", 0)
+    st.session_state.initialized = True
+    return True
+
+
+def reset_session():
+    """세션 초기화"""
+    keys_to_delete = [
+        "messages", "current_phase", "current_step", "phase_completed",
+        "user_data", "outputs", "initialized", "milestones_achieved",
+        "pending_milestone", "total_user_messages", "action_pending",
+        "session_start",
+    ]
+    for key in keys_to_delete:
+        if key in st.session_state:
+            del st.session_state[key]
