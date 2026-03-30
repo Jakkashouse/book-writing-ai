@@ -105,8 +105,6 @@ def render_submission_page():
         _render_result()
     elif step == "consult":
         _render_consultation()
-    elif step == "consult_done":
-        _render_consult_done()
     elif step == "choice":
         _render_three_doors()
 
@@ -282,28 +280,27 @@ def _render_result():
 
     st.markdown("")
 
-    # 무료 1:1 상담 안내
+    # 무료 1:1 상담 안내 — 캘린들리 링크
     st.markdown(
         '<div style="background:linear-gradient(135deg,#F0F7E8,#E8F0FF);'
         'padding:1.5rem;border-radius:12px;margin:1rem 0;">'
-        '<h3 style="margin:0;color:#2D5016;">📞 무료 1:1 상담으로 더 자세히 알아보세요</h3>'
+        '<h3 style="margin:0;color:#2D5016;">📞 무료 1:1 상담 (30분)</h3>'
         '<p style="margin:0.5rem 0 0;color:#555;font-size:0.95rem;">'
-        '분석 결과를 바탕으로 대표가 직접 15분 상담해드립니다.<br>'
-        '대면/비대면 모두 가능합니다. <strong>부담 없이 신청하세요.</strong></p>'
+        '분석 결과를 바탕으로 대표가 직접 상담해드립니다.<br>'
+        '비대면(전화/줌) · 대면(제주도 무료, 서울 등 출장 시 별도)<br>'
+        '<strong>투고하신 분 한정 30분 무료입니다.</strong></p>'
         '</div>',
         unsafe_allow_html=True,
     )
 
     col1, col2 = st.columns(2)
     with col1:
-        if st.button(
-            "📞 무료 1:1 상담 신청",
+        st.link_button(
+            "📞 무료 상담 예약하기 (캘린들리)",
+            url="https://calendly.com/joyful4/goodbook",
             use_container_width=True,
             type="primary",
-            key="go_to_consult",
-        ):
-            st.session_state.submission_step = "consult"
-            st.rerun()
+        )
     with col2:
         if st.button(
             "건너뛰기 → 내 길 선택",
@@ -324,122 +321,49 @@ def _render_result():
 
 
 def _render_consultation():
-    """무료 1:1 상담 신청 화면"""
+    """무료 1:1 상담 — 캘린들리 예약"""
     data = st.session_state.submission_data
 
     st.markdown(
-        '<h2 style="color:#2D5016;">📞 무료 1:1 상담 신청</h2>',
+        '<h2 style="color:#2D5016;">📞 무료 1:1 상담 예약 (30분)</h2>',
         unsafe_allow_html=True,
     )
     st.markdown(
         f"**「{data.get('book_title', '')}」** 분석 결과를 바탕으로\n"
-        "대표가 직접 상담해드립니다. **15분, 무료, 부담 없이.**"
+        "대표가 직접 상담해드립니다. **30분, 무료, 부담 없이.**"
     )
 
     st.divider()
 
-    # 상담 방식 선택
-    st.markdown("#### 상담 방식을 선택해주세요")
-
-    consult_type = st.radio(
-        "상담 방식",
-        options=["비대면 (전화/줌)", "대면 (서울 강남)"],
-        horizontal=True,
-        label_visibility="collapsed",
+    st.markdown(
+        '<div style="background:#F0F7E8;padding:1.5rem;border-radius:12px;margin:1rem 0;">'
+        '<p style="margin:0;font-size:0.95rem;color:#555;">'
+        '<strong>비대면</strong>: 전화 또는 줌 (무료)<br>'
+        '<strong>대면 - 제주도</strong>: 무료<br>'
+        '<strong>대면 - 서울/기타</strong>: 출장비 별도 (공항 근처 가능)</p>'
+        '</div>',
+        unsafe_allow_html=True,
     )
 
-    with st.form("consultation_form"):
-        col1, col2 = st.columns(2)
-        with col1:
-            c_name = st.text_input(
-                "이름 *",
-                value=data.get("author_name", ""),
-                key="consult_name",
-            )
-        with col2:
-            c_contact = st.text_input(
-                "연락처 * (전화 또는 카카오톡 ID)",
-                value=data.get("contact", ""),
-                key="consult_contact",
-            )
+    st.link_button(
+        "📞 캘린들리에서 예약하기",
+        url="https://calendly.com/joyful4/goodbook",
+        use_container_width=True,
+        type="primary",
+    )
 
-        c_time = st.text_input(
-            "통화/방문 가능 시간",
-            placeholder="예: 평일 오후 2~5시, 토요일 오전",
-            key="consult_time",
-        )
-
-        c_question = st.text_area(
-            "특별히 궁금한 것 (선택)",
-            height=80,
-            placeholder="예: 출간 비용이 궁금해요 / 자비출판이 나을까요? / 원고 완성까지 얼마나 걸릴까요?",
-            key="consult_question",
-        )
-
-        submitted = st.form_submit_button(
-            "📞 상담 신청하기",
-            use_container_width=True,
-            type="primary",
-        )
-
-        if submitted:
-            if c_name and c_contact:
-                save_submission_choice("consultation", {
-                    "name": c_name,
-                    "contact": c_contact,
-                    "consult_type": consult_type,
-                    "preferred_time": c_time,
-                    "question": c_question,
-                })
-                st.session_state.submission_step = "consult_done"
-                st.rerun()
-            else:
-                st.error("이름과 연락처를 입력해주세요.")
-
-    st.divider()
+    st.markdown("")
+    st.caption("예약 후 아래 버튼을 눌러 다음 단계로 이동하세요.")
 
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("건너뛰기 → 내 길 선택", use_container_width=True, key="skip_consult"):
+        if st.button("다음 → 내 길 선택", use_container_width=True, type="primary", key="consult_to_choice"):
             st.session_state.submission_step = "choice"
             st.rerun()
     with col2:
         if st.button("← 분석 결과 다시 보기", use_container_width=True, key="back_to_result"):
             st.session_state.submission_step = "result"
             st.rerun()
-
-
-def _render_consult_done():
-    """상담 신청 완료 화면"""
-    st.markdown(
-        '<div style="background:#F0F7E8;padding:2rem;border-radius:12px;text-align:center;">'
-        '<p style="font-size:2rem;margin:0;">📞</p>'
-        '<h2 style="color:#2D5016;margin:0.5rem 0;">상담 신청 완료!</h2>'
-        '<p style="color:#555;font-size:1rem;">'
-        '빠른 시일 내에 연락드리겠습니다.<br>'
-        '상담은 <strong>무료</strong>이고, 부담 없이 편하게 이야기 나누겠습니다.</p>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("")
-
-    if st.button(
-        "다음 → 내 길 선택하기",
-        use_container_width=True,
-        type="primary",
-        key="consult_done_to_choice",
-    ):
-        st.session_state.submission_step = "choice"
-        st.rerun()
-
-    if st.button(
-        "← 코칭으로 돌아가기",
-        use_container_width=True,
-        key="consult_done_back",
-    ):
-        exit_submission_mode()
-        st.rerun()
 
 
 def _render_three_doors():
@@ -488,44 +412,18 @@ def _render_three_doors():
             'border-left:4px solid #D4A017;margin-bottom:1rem;">'
             '<h3 style="margin:0;color:#8B6914;">💡 문 2: "좀 더 알아보고 싶어요"</h3>'
             '<p style="margin:0.5rem 0 0;color:#555;">'
-            '<strong>무료 컨설팅 15분</strong>을 신청해주세요.<br>'
+            '<strong>무료 상담 30분</strong>을 예약해주세요.<br>'
             '내 원고 상태에서 출간까지 뭐가 필요한지,<br>'
             '어떤 루트가 맞는지, 비용은 얼마인지.<br>'
             '다 알려드리고, 그 후에 결정하시면 됩니다.</p>'
             '</div>',
             unsafe_allow_html=True,
         )
-
-        with st.expander("💡 무료 컨설팅 신청하기", expanded=False):
-            with st.form("door2_form"):
-                name2 = st.text_input(
-                    "이름",
-                    value=st.session_state.submission_data.get("author_name", ""),
-                    key="door2_name",
-                )
-                contact2 = st.text_input(
-                    "연락처 (전화 또는 카카오톡 ID)",
-                    key="door2_contact",
-                )
-                preferred_time = st.text_input(
-                    "통화 가능한 시간대",
-                    placeholder="예: 평일 오후 2~5시",
-                    key="door2_time",
-                )
-                if st.form_submit_button("신청하기", use_container_width=True):
-                    if name2 and contact2:
-                        save_submission_choice("explore", {
-                            "name": name2,
-                            "contact": contact2,
-                            "preferred_time": preferred_time,
-                        })
-                        st.success(
-                            "신청 완료! 📞\n\n"
-                            "빠른 시일 내에 연락드리겠습니다.\n"
-                            "부담 없이 편하게 이야기 나누겠습니다."
-                        )
-                    else:
-                        st.error("이름과 연락처를 입력해주세요.")
+        st.link_button(
+            "💡 무료 상담 예약하기 (캘린들리)",
+            url="https://calendly.com/joyful4/goodbook",
+            use_container_width=True,
+        )
 
     st.markdown("")
 
@@ -542,51 +440,19 @@ def _render_three_doors():
             unsafe_allow_html=True,
         )
 
-        with st.expander("🚀 함께 가기 — 상담 신청 + 출간 루트", expanded=False):
-            # 출간 루트 참고 정보
-            st.markdown("#### 출간 루트 비교")
+        with st.expander("🚀 출간 루트 비교 보기", expanded=False):
             for key, route in PUBLISHING_ROUTES.items():
                 st.markdown(
                     f"**{route['name']}** — {route['desc']}\n"
                     f"> {route['detail']}"
                 )
-            st.markdown("---")
 
-            with st.form("door3_form"):
-                name3 = st.text_input(
-                    "이름",
-                    value=st.session_state.submission_data.get("author_name", ""),
-                    key="door3_name",
-                )
-                contact3 = st.text_input(
-                    "연락처 (전화 또는 카카오톡 ID)",
-                    key="door3_contact",
-                )
-                route_pref = st.selectbox(
-                    "관심 있는 출간 루트",
-                    options=["아직 모르겠어요"] + [r["name"] for r in PUBLISHING_ROUTES.values()],
-                    key="door3_route",
-                )
-                memo = st.text_area(
-                    "하고 싶은 말 (선택)",
-                    height=80,
-                    key="door3_memo",
-                )
-                if st.form_submit_button("상담 신청하기", use_container_width=True, type="primary"):
-                    if name3 and contact3:
-                        save_submission_choice("together", {
-                            "name": name3,
-                            "contact": contact3,
-                            "route_pref": route_pref,
-                            "memo": memo,
-                        })
-                        st.success(
-                            "신청 완료! 🚀\n\n"
-                            "빠른 시일 내에 연락드리겠습니다.\n"
-                            "함께 만들어가겠습니다!"
-                        )
-                    else:
-                        st.error("이름과 연락처를 입력해주세요.")
+        st.link_button(
+            "🚀 무료 상담 예약하기 (캘린들리)",
+            url="https://calendly.com/joyful4/goodbook",
+            use_container_width=True,
+            type="primary",
+        )
 
     st.divider()
 
