@@ -25,6 +25,21 @@ def stream_response(system_prompt: str, messages: list, long_output: bool = Fals
             yield text
 
 
+def stream_submission_analysis(system_prompt: str, submission_text: str):
+    """투고 원고 분석용 스트리밍 (긴 출력)"""
+    client = get_client()
+    messages = [{"role": "user", "content": submission_text}]
+
+    with client.messages.stream(
+        model=MODEL_NAME,
+        max_tokens=MAX_TOKENS_LONG,
+        system=system_prompt,
+        messages=messages,
+    ) as stream:
+        for text in stream.text_stream:
+            yield text
+
+
 def stream_action_response(system_prompt: str, action_prompt: str, messages: list):
     """원클릭 액션용 스트리밍 (이전 대화 컨텍스트 + 액션 프롬프트)"""
     # 기존 대화에 액션 요청을 추가

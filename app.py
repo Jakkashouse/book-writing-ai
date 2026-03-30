@@ -11,6 +11,7 @@ from pathlib import Path
 from config import APP_TITLE, APP_ICON, COACH_AVATAR, USER_AVATAR, ACTION_BUTTONS
 from coaching.context_manager import (
     init_session_state,
+    init_submission_state,
     add_message,
     get_api_messages,
     get_last_assistant_message,
@@ -24,6 +25,7 @@ from coaching.context_manager import (
 from coaching.phases import get_welcome_message
 from coaching.prompts import build_system_prompt, build_action_prompt
 from components.sidebar import render_sidebar
+from components.submission import render_submission_page
 from components.chat_ui import (
     render_chat_history,
     render_assistant_message_streaming,
@@ -53,16 +55,36 @@ if css_file.exists():
 
 # ─── 세션 초기화 ─────────────────────────────
 init_session_state()
+init_submission_state()
 
 # ─── 사이드바 ────────────────────────────────
 render_sidebar()
+
+# ═══════════════════════════════════════════════
+# 투고 모드 분기
+# ═══════════════════════════════════════════════
+if st.session_state.get("submission_mode", False):
+    render_submission_page()
+    st.stop()
 
 # ═══════════════════════════════════════════════
 # 메인 채팅 영역
 # ═══════════════════════════════════════════════
 st.title(f"{APP_ICON} {APP_TITLE}")
 st.caption("질문을 통해 당신의 전문성을 끌어내는 AI 코치 | 작가의집 출판사")
-st.markdown("---")
+
+# 현재 단계 표시
+from config import PHASE_NAMES, PHASE_ICONS
+_phase = st.session_state.current_phase
+_phase_name = PHASE_NAMES.get(_phase, "")
+_phase_icon = PHASE_ICONS.get(_phase, "")
+st.markdown(
+    f'<div style="background:linear-gradient(90deg,#2D5016,#4A8C2A);'
+    f'color:white;padding:0.5rem 1rem;border-radius:10px;margin-bottom:1rem;'
+    f'font-size:0.85rem;font-weight:600;">'
+    f'{_phase_icon} {_phase}단계: {_phase_name} 진행 중</div>',
+    unsafe_allow_html=True,
+)
 
 # ─── 환영 메시지 (첫 방문) ────────────────────
 if not st.session_state.initialized:

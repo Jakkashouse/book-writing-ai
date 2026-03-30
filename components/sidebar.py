@@ -1,11 +1,14 @@
 """
-사이드바 컴포넌트 - 진행현황, 통계, 산출물 다운로드, 세션 관리
+사이드바 컴포넌트 - 진행현황, 통계, 산출물 다운로드, 투고, 세션 관리
 """
 import streamlit as st
-from config import TOTAL_PHASES, PHASE_NAMES, PHASE_ICONS, PHASE_DESCRIPTIONS
+from config import (
+    TOTAL_PHASES, PHASE_NAMES, PHASE_ICONS, PHASE_DESCRIPTIONS, APP_VERSION,
+)
 from coaching.context_manager import (
     get_progress_percentage, get_stats, reset_session,
     save_session_to_file, load_session_from_file,
+    init_submission_state, enter_submission_mode, exit_submission_mode,
 )
 
 
@@ -31,6 +34,45 @@ def render_sidebar():
 
         st.divider()
 
+        # ─── 현재 단계 하이라이트 카드 ─────────
+        current_phase = st.session_state.current_phase
+        phase_completed = st.session_state.phase_completed
+
+        if current_phase <= TOTAL_PHASES:
+            phase_name = PHASE_NAMES.get(current_phase, "")
+            phase_icon = PHASE_ICONS.get(current_phase, "")
+            phase_desc = PHASE_DESCRIPTIONS.get(current_phase, "")
+            from coaching.phases import PHASE_QUESTIONS
+            phase_output = PHASE_QUESTIONS.get(current_phase, {}).get("output", "")
+
+            is_done = phase_completed.get(current_phase, False)
+            if is_done and current_phase == TOTAL_PHASES:
+                st.markdown(
+                    '<div class="current-phase-card done">'
+                    '<p style="margin:0;font-weight:700;font-size:1rem;color:#2D5016;">'
+                    '🎉 모든 단계 완료!</p>'
+                    '<p style="margin:0.2rem 0 0;font-size:0.82rem;color:#555;">'
+                    '산출물을 다운로드하세요</p>'
+                    '</div>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                step = st.session_state.current_step
+                st.markdown(
+                    f'<div class="current-phase-card">'
+                    f'<p style="margin:0;font-size:0.7rem;color:#888;text-transform:uppercase;'
+                    f'letter-spacing:0.05em;">현재 단계</p>'
+                    f'<p style="margin:0.2rem 0;font-weight:700;font-size:1.05rem;color:#2D5016;">'
+                    f'{phase_icon} {current_phase}단계: {phase_name}</p>'
+                    f'<p style="margin:0;font-size:0.8rem;color:#555;">{phase_desc}</p>'
+                    f'<p style="margin:0.3rem 0 0;font-size:0.72rem;color:#888;">'
+                    f'산출물: {phase_output} · 대화 {step}회</p>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
+
+        st.markdown('<div style="height:0.5rem;"></div>', unsafe_allow_html=True)
+
         # ─── 전체 진행률 ──────────────────────
         progress = get_progress_percentage()
         pct = int(progress * 100)
@@ -51,12 +93,33 @@ def render_sidebar():
         with col3:
             st.metric("글자수", f"{stats['total_chars']:,}")
 
+        # ─── 투고하기 버튼 ─────────────────────
+        init_submission_state()
+        is_sub_mode = st.session_state.get("submission_mode", False)
+
+        if is_sub_mode:
+            if st.button(
+                "← 코칭으로 돌아가기",
+                use_container_width=True,
+                key="sidebar_back_to_coaching",
+            ):
+                exit_submission_mode()
+                st.rerun()
+        else:
+            if st.button(
+                "📮 투고하기",
+                use_container_width=True,
+                type="primary",
+                key="sidebar_submit_btn",
+            ):
+                enter_submission_mode()
+                st.rerun()
+            st.caption("AI가 무료로 원고를 분석해드립니다")
+
         st.divider()
 
-        # ─── Phase별 상태 (타임라인) ─────────
+        # ─── Phase별 상태 ─────────────────────
         st.subheader("코칭 단계")
-        current_phase = st.session_state.current_phase
-        phase_completed = st.session_state.phase_completed
 
         for i in range(1, TOTAL_PHASES + 1):
             if phase_completed.get(i):
@@ -72,11 +135,6 @@ def render_sidebar():
             label = f"{icon} {i}단계: {PHASE_NAMES[i]} ({status})"
             with st.expander(label, expanded=(i == current_phase)):
                 st.caption(f"{PHASE_ICONS[i]} {PHASE_DESCRIPTIONS[i]}")
-
-                # 현재 진행 중인 단계에 목표 표시
-                if i == current_phase and not phase_completed.get(i):
-                    step = st.session_state.current_step
-                    st.caption(f"📊 대화 {step}회 진행")
 
                 output = st.session_state.outputs.get(i)
                 if output:
@@ -124,8 +182,8 @@ def render_sidebar():
         col1, col2 = st.columns(2)
         with col1:
             if st.button("💾 저장", use_container_width=True, key="save_btn"):
-                filepath = save_session_to_file()
-                st.toast(f"저장 완료!", icon="✅")
+                save_session_to_file()
+                st.toast("저장 완료!", icon="✅")
 
         with col2:
             if st.button("📂 불러오기", use_container_width=True, key="load_btn"):
@@ -147,9 +205,39 @@ def render_sidebar():
                 use_container_width=True,
             )
 
-        if st.button("🔄 새 대화 시작", use_container_width=True, type="secondary"):
-            reset_session()
-            st.rerun()
+        # 새 대화 시작 (확인 포함)
+        if "confirm_reset" not in st.session_state:
+            st.session_state.confirm_reset = False
+
+        if not st.session_state.confirm_reset:
+            if st.button("🔄 새 대화 시작", use_container_width=True, type="secondary"):
+                if st.session_state.messages:
+                    st.session_state.confirm_reset = True
+                    st.rerun()
+                else:
+                    reset_session()
+                    st.rerun()
+        else:
+            st.warning("진행 중인 대화가 삭제됩니다.")
+            c1, c2 = st.columns(2)
+            with c1:
+                if st.button("확인", use_container_width=True, key="confirm_yes", type="primary"):
+                    st.session_state.confirm_reset = False
+                    reset_session()
+                    st.rerun()
+            with c2:
+                if st.button("취소", use_container_width=True, key="confirm_no"):
+                    st.session_state.confirm_reset = False
+                    st.rerun()
+
+        # ─── 푸터 ────────────────────────────
+        st.markdown(
+            f'<div class="sidebar-footer">'
+            f'<p>Powered by Claude AI</p>'
+            f'<p>작가의집 출판사 · v{APP_VERSION}</p>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
 
 
 def _export_full_conversation() -> str:

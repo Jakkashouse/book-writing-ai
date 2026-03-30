@@ -254,8 +254,129 @@ def reset_session():
         "messages", "current_phase", "current_step", "phase_completed",
         "user_data", "outputs", "initialized", "milestones_achieved",
         "pending_milestone", "total_user_messages", "action_pending",
-        "session_start",
+        "session_start", "submission_mode", "submission_data",
+        "submission_result", "submission_step",
     ]
     for key in keys_to_delete:
         if key in st.session_state:
             del st.session_state[key]
+
+
+# ─── 투고 시스템 ──────────────────────────────
+
+def init_submission_state():
+    """투고 관련 세션 상태 초기화"""
+    defaults = {
+        "submission_mode": False,
+        "submission_step": "input",  # input → analyzing → result → choice
+        "submission_data": {},
+        "submission_result": None,
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+
+def enter_submission_mode():
+    """투고 모드 진입"""
+    init_submission_state()
+    st.session_state.submission_mode = True
+    st.session_state.submission_step = "input"
+
+
+def exit_submission_mode():
+    """투고 모드 종료 → 코칭으로 복귀"""
+    st.session_state.submission_mode = False
+
+
+def save_submission(data: dict):
+    """투고 데이터 저장 (로컬 JSON)"""
+    st.session_state.submission_data = data
+
+    # data/ 폴더에 투고 기록 저장
+    data_dir = Path(DATA_DIR)
+    data_dir.mkdir(exist_ok=True)
+    submissions_file = data_dir / "submissions.json"
+
+    submissions = []
+    if submissions_file.exists():
+        with open(submissions_file, "r", encoding="utf-8") as f:
+            submissions = json.load(f)
+
+    record = {
+        **data,
+        "submitted_at": datetime.now().isoformat(),
+        "user_data": st.session_state.user_data,
+    }
+    submissions.append(record)
+
+    with open(submissions_file, "w", encoding="utf-8") as f:
+        json.dump(submissions, f, ensure_ascii=False, indent=2)
+
+    return record
+
+
+def save_submission_choice(choice: str, contact: dict = None):
+    """3개의 문 선택 저장"""
+    data_dir = Path(DATA_DIR)
+    data_dir.mkdir(exist_ok=True)
+    choices_file = data_dir / "submission_choices.json"
+
+    choices = []
+    if choices_file.exists():
+        with open(choices_file, "r", encoding="utf-8") as f:
+            choices = json.load(f)
+
+    record = {
+        "choice": choice,
+        "contact": contact,
+        "submission_data": st.session_state.submission_data,
+        "chosen_at": datetime.now().isoformat(),
+    }
+    choices.append(record)
+
+    with open(choices_file, "w", encoding="utf-8") as f:
+        json.dump(choices, f, ensure_ascii=False, indent=2)
+
+    return record
+
+
+def send_submission_email(submission: dict):
+    """투고 접수 이메일 알림 (SMTP 설정 시 작동)"""
+    try:
+        email_config = st.secrets.get("email_notify", {})
+        if not email_config:
+            return False
+
+        import smtplib
+        from email.mime.text import MIMEText
+
+        urgency = submission.get("urgency", "low")
+        urgency_emoji = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(urgency, "🟢")
+        author = submission.get("author_name", "미상")
+        title = submission.get("book_title", "제목 미정")
+
+        subject = f"[투고 접수] {author} — {urgency_emoji} 「{title}」"
+        body = (
+            f"투고가 접수되었습니다.\n\n"
+            f"작가: {author}\n"
+            f"제목: {title}\n"
+            f"긴급도: {urgency_emoji}\n"
+            f"접수 시간: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
+            f"목차:\n{submission.get('toc', '(없음)')}\n\n"
+            f"원고 분량: {len(submission.get('manuscript', ''))}자\n"
+        )
+
+        msg = MIMEText(body, "plain", "utf-8")
+        msg["Subject"] = subject
+        msg["From"] = email_config["smtp_user"]
+        msg["To"] = email_config["to"]
+
+        with smtplib.SMTP(email_config["smtp_server"], int(email_config["smtp_port"])) as server:
+            server.starttls()
+            server.login(email_config["smtp_user"], email_config["smtp_pass"])
+            server.send_message(msg)
+
+        return True
+    except Exception:
+        return False
