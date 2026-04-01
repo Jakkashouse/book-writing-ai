@@ -420,3 +420,39 @@ div[data-testid="stAlert"]:has(.st-emotion-cache-1gulkj5) {
         padding: 12px 16px;
     }
 }
+
+/* ─── 사이드바 Expander 배경 수정 ────────────── */
+[data-testid="stSidebar"] details[data-testid="stExpander"] {
+    background-color: transparent;
+    border: 1px solid #D8D3C8;
+}
+
+[data-testid="stSidebar"] details[data-testid="stExpander"] summary {
+    background-color: transparent;
+    color: #333333 !important;
+}
+
+[data-testid="stSidebar"] details[data-testid="stExpander"][open] {
+    background-color: rgba(245, 240, 232, 0.6);
+}
+
+[data-testid="stSidebar"] details[data-testid="stExpander"][open] summary {
+    background-color: rgba(45, 80, 22, 0.08);
+    color: #2D5016 !important;
+}
+
+[data-testid="stSidebar"] details[data-testid="stExpander"] div[data-testid="stExpanderDetails"] {
+    background-color: transparent;
+    color: #333333;
+}
+
+/* 사이드바 내 모든 summary, details 배경 강제 투명 */
+[data-testid="stSidebar"] summary,
+[data-testid="stSidebar"] details {
+    background-color: transparent !important;
+}
+
+[data-testid="stSidebar"] summary span,
+[data-testid="stSidebar"] summary p {
+    color: #333333 !important;
+}
