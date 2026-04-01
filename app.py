@@ -204,6 +204,9 @@ def process_action(action_key: str):
 # 입력 처리
 # ═══════════════════════════════════════════════
 
+# 입력창은 항상 표시
+prompt = st.chat_input("메시지를 입력하세요...")
+
 # 1. 원클릭 액션이 대기 중이면 처리
 if st.session_state.action_pending:
     action_key = st.session_state.action_pending
@@ -215,5 +218,5 @@ elif quick_reply:
     process_user_input(quick_reply)
 
 # 3. 일반 텍스트 입력
-elif prompt := st.chat_input("메시지를 입력하세요..."):
+elif prompt:
     process_user_input(prompt)
