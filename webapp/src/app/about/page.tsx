@@ -1,6 +1,7 @@
 import Header from '@/components/landing/Header';
 import Footer from '@/components/landing/Footer';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function AboutPage() {
   return (
@@ -115,7 +116,7 @@ export default function AboutPage() {
             </div>
 
             <div className="bg-white rounded-3xl p-8 border-l-8 border-accent">
-              <h3 className="text-2xl font-bold text-accent mb-4">작가의집 (1인 출판사)</h3>
+              <h3 className="text-2xl font-bold text-accent mb-4">작가의 집 (1인 출판사)</h3>
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <span className="text-accent font-black mr-3">📖</span>
@@ -141,6 +142,133 @@ export default function AboutPage() {
               </ul>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Published Books Gallery */}
+      <section className="bg-white py-16 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="font-serif text-3xl font-bold text-center text-text-dark mb-4">
+            출간 도서
+          </h2>
+          <p className="text-center text-text-medium mb-12">
+            작가의 집에서 세상에 나온 책들
+          </p>
+
+          {/* Scrolling rows */}
+          <div className="space-y-6">
+            {/* Row 1 - scroll left */}
+            <div className="relative">
+              <div className="flex gap-4 animate-scroll-left">
+                {[
+                  { src: '/books/하루1시간_책쓰기의기적.jpg', title: '하루 1시간, 책쓰기의 기적' },
+                  { src: '/books/클로드AI로_글쓰기.jpg', title: '클로드 AI로 글쓰기' },
+                  { src: '/books/재개발의_여왕.png', title: '재개발의 여왕' },
+                  { src: '/books/내이름_네이버에_벅벅_도배하기.jpg', title: '내 이름 네이버에 벅벅 도배하기' },
+                  { src: '/books/동료의힘.jpg', title: '동료의 힘' },
+                  { src: '/books/오롯이_셋이서_하와이.jpg', title: '오롯이 셋이서 하와이' },
+                  { src: '/books/사랑은_짜장면이야.jpg', title: '사랑은 짜장면이야' },
+                  { src: '/books/시간의자국.png', title: '시간의 자국' },
+                  { src: '/books/마음이_자라는_책방.jpg', title: '마음이 자라는 책방' },
+                  { src: '/books/인생은_한권의_아름다운_책이다.jpg', title: '인생은 한 권의 아름다운 책이다' },
+                  { src: '/books/책을_이렇게_쉽게_써도_되나요.jpg', title: '책을 이렇게 쉽게 써도 되나요?' },
+                  { src: '/books/예비작가들이_묻고_작가가_답하다.jpg', title: '예비작가들이 묻고 작가가 답하다' },
+                  { src: '/books/40년_라켓이_가르쳐준것.jpg', title: '40년, 라켓이 가르쳐준 것' },
+                  { src: '/books/스킨십_10분의_기적.jpg', title: '스킨십 10분의 기적' },
+                  { src: '/books/하루1시간_책쓰기의기적.jpg', title: '하루 1시간, 책쓰기의 기적' },
+                  { src: '/books/클로드AI로_글쓰기.jpg', title: '클로드 AI로 글쓰기' },
+                  { src: '/books/재개발의_여왕.png', title: '재개발의 여왕' },
+                  { src: '/books/내이름_네이버에_벅벅_도배하기.jpg', title: '내 이름 네이버에 벅벅 도배하기' },
+                  { src: '/books/동료의힘.jpg', title: '동료의 힘' },
+                  { src: '/books/오롯이_셋이서_하와이.jpg', title: '오롯이 셋이서 하와이' },
+                  { src: '/books/사랑은_짜장면이야.jpg', title: '사랑은 짜장면이야' },
+                  { src: '/books/시간의자국.png', title: '시간의 자국' },
+                ].map((book, i) => (
+                  <div key={i} className="flex-shrink-0 w-[140px] group">
+                    <div className="relative w-[140px] h-[200px] rounded-lg overflow-hidden shadow-md group-hover:shadow-xl transition-shadow">
+                      <Image src={book.src} alt={book.title} fill className="object-cover" sizes="140px" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Row 2 - scroll right */}
+            <div className="relative">
+              <div className="flex gap-4 animate-scroll-right">
+                {[
+                  { src: '/books/당신만의_속도로_괜찮습니다.jpg', title: '당신만의 속도로 괜찮습니다' },
+                  { src: '/books/괜찮아_나를위한시간.jpg', title: '괜찮아, 나를 위한 시간' },
+                  { src: '/books/너니까_하는거야.jpg', title: '너니까 하는 거야' },
+                  { src: '/books/오색체질밥상.jpg', title: '오색체질밥상' },
+                  { src: '/books/죽고싶지만_서울대는_가고싶어.jpg', title: '죽고 싶지만 서울대는 가고 싶어' },
+                  { src: '/books/바닷가_뜨개방.jpg', title: '바닷가 뜨개방' },
+                  { src: '/books/책을_고르다_숨을_고르다.jpg', title: '책을 고르다 숨을 고르다' },
+                  { src: '/books/인생코스모스.jpg', title: '인생 코스모스' },
+                  { src: '/books/살아가는_이유.jpg', title: '살아가는 이유' },
+                  { src: '/books/아무도_알려주지_않았던_다이어트이야기.jpg', title: '아무도 알려주지 않았던 다이어트 이야기' },
+                  { src: '/books/나는_부모를_버렸습니다.png', title: '나는 부모를 버렸습니다' },
+                  { src: '/books/오십에_읽는_성경.jpg', title: '오십에 읽는 성경' },
+                  { src: '/books/말센스_없으면_꼰대확정입니다.jpg', title: '말센스 없으면 꼰대 확정입니다' },
+                  { src: '/books/주님_지금_어디에.png', title: '주님 지금 어디에' },
+                  { src: '/books/당신만의_속도로_괜찮습니다.jpg', title: '당신만의 속도로 괜찮습니다' },
+                  { src: '/books/괜찮아_나를위한시간.jpg', title: '괜찮아, 나를 위한 시간' },
+                  { src: '/books/너니까_하는거야.jpg', title: '너니까 하는 거야' },
+                  { src: '/books/오색체질밥상.jpg', title: '오색체질밥상' },
+                  { src: '/books/죽고싶지만_서울대는_가고싶어.jpg', title: '죽고 싶지만 서울대는 가고 싶어' },
+                  { src: '/books/바닷가_뜨개방.jpg', title: '바닷가 뜨개방' },
+                  { src: '/books/책을_고르다_숨을_고르다.jpg', title: '책을 고르다 숨을 고르다' },
+                  { src: '/books/인생코스모스.jpg', title: '인생 코스모스' },
+                ].map((book, i) => (
+                  <div key={i} className="flex-shrink-0 w-[140px] group">
+                    <div className="relative w-[140px] h-[200px] rounded-lg overflow-hidden shadow-md group-hover:shadow-xl transition-shadow">
+                      <Image src={book.src} alt={book.title} fill className="object-cover" sizes="140px" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Row 3 - scroll left */}
+            <div className="relative">
+              <div className="flex gap-4 animate-scroll-left-slow">
+                {[
+                  { src: '/books/사업계획서_없이_창업하지마라.jpg', title: '사업계획서 없이 창업하지마라' },
+                  { src: '/books/평범한_직장인_2권의_책.jpg', title: '평범한 직장인이 2권의 책을 썼을까' },
+                  { src: '/books/함께_공부해서_날자.jpg', title: '함께 공부해서 날자' },
+                  { src: '/books/아이들과_떠나는_피아노여행.jpg', title: '아이들과 떠나는 피아노 여행' },
+                  { src: '/books/내_인생을_바꾼_명언.png', title: '내 인생을 바꾼 명언' },
+                  { src: '/books/내가_살아가는_이유.jpg', title: '내가 살아가는 이유' },
+                  { src: '/books/정솜결.png', title: '정솜결' },
+                  { src: '/books/소명사명순명.jpg', title: '소명 사명 순명' },
+                  { src: '/books/보이차.jpg', title: '보이차' },
+                  { src: '/books/가르치며_배우는_신앙.jpg', title: '가르치며 배우는 신앙' },
+                  { src: '/books/열다섯걸음.jpg', title: '열다섯 걸음' },
+                  { src: '/books/사모엄마아내선교사.jpg', title: '사모 엄마 아내 선교사' },
+                  { src: '/books/하루1시간_작가되는법.jpg', title: '하루 1시간 작가 되는 법' },
+                  { src: '/books/사업계획서_없이_창업하지마라.jpg', title: '사업계획서 없이 창업하지마라' },
+                  { src: '/books/평범한_직장인_2권의_책.jpg', title: '평범한 직장인이 2권의 책을 썼을까' },
+                  { src: '/books/함께_공부해서_날자.jpg', title: '함께 공부해서 날자' },
+                  { src: '/books/아이들과_떠나는_피아노여행.jpg', title: '아이들과 떠나는 피아노 여행' },
+                  { src: '/books/내_인생을_바꾼_명언.png', title: '내 인생을 바꾼 명언' },
+                  { src: '/books/내가_살아가는_이유.jpg', title: '내가 살아가는 이유' },
+                  { src: '/books/정솜결.png', title: '정솜결' },
+                  { src: '/books/소명사명순명.jpg', title: '소명 사명 순명' },
+                  { src: '/books/보이차.jpg', title: '보이차' },
+                ].map((book, i) => (
+                  <div key={i} className="flex-shrink-0 w-[140px] group">
+                    <div className="relative w-[140px] h-[200px] rounded-lg overflow-hidden shadow-md group-hover:shadow-xl transition-shadow">
+                      <Image src={book.src} alt={book.title} fill className="object-cover" sizes="140px" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <p className="text-center text-text-light mt-8 text-lg">
+            ...그리고 더 많은 책들이 세상에 나왔습니다
+          </p>
         </div>
       </section>
 

@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Nanum+Myeongjo:wght@400;700&display=swap');
+@import "tailwindcss";
 
 :root {
   --primary: #E8A849;
@@ -47,4 +47,57 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+.bg-gradient-radial {
+  background: radial-gradient(circle, currentColor 0%, transparent 50%);
+}
+
+/* Book cover scroll animations */
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scroll-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 40s linear infinite;
+}
+
+.animate-scroll-right {
+  animation: scroll-right 45s linear infinite;
+}
+
+.animate-scroll-left-slow {
+  animation: scroll-left 50s linear infinite;
+}
+
+.animate-scroll-left:hover,
+.animate-scroll-right:hover,
+.animate-scroll-left-slow:hover {
+  animation-play-state: paused;
 }
