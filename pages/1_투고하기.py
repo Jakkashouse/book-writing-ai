@@ -149,10 +149,14 @@ with col2:
 col3, col4 = st.columns(2)
 with col3:
     expertise_years = st.number_input(
-        "해당 분야 경력 (년)", min_value=0, max_value=60, value=0, step=1
+        "해당 분야 경력 (년)", min_value=0, max_value=60, value=0, step=1,
+        help="원고 주제와 관련된 분야의 경력. 예) 재테크 책 → 재무상담 경력",
     )
 with col4:
-    title_candidate = st.text_input("제목 후보 (있으면)", placeholder="예: 퇴사 말고 재설계")
+    title_candidate = st.text_input(
+        "제목 후보 (있으면)",
+        placeholder="예: 퇴사 말고 재설계 — 없어도 OK",
+    )
 
 st.markdown("### 🏅 보유한 자격·이력 (해당하는 것 모두 클릭)")
 credentials = st.pills(
@@ -211,16 +215,16 @@ memo = st.text_area(
 st.divider()
 
 # ─── 파일 업로드 ─────────────────────────────
-st.markdown("### 📄 파일 업로드")
+st.markdown("### 📄 원고 업로드")
 st.caption(
-    f"지원 포맷: {', '.join(sorted(SUPPORTED_EXTS))}. "
-    "한글(.hwp)은 .docx 또는 .pdf로 변환 후 올려주세요."
+    f"지원 포맷: {', '.join(sorted(SUPPORTED_EXTS))} · 최대 200MB. "
+    "한글파일(.hwp)은 .docx 또는 .pdf로 저장 후 올려주세요."
 )
 
 manuscript_file = st.file_uploader(
     "전체 원고 * (필수)",
     type=["md", "txt", "docx", "pdf"],
-    help="가급적 전체 원고. 일부라도 가능하지만 100자 이상 필요합니다.",
+    help="완성된 전체 원고면 좋지만, 일부 챕터(최소 100자)만 있어도 분석 가능합니다. AI는 앞 15,000자를 심층적으로 읽어요.",
 )
 
 st.divider()
@@ -253,13 +257,15 @@ if submit:
         st.error("지원하지 않는 파일 형식입니다.")
         st.stop()
 
-    with st.spinner("원고를 읽는 중..."):
+    with st.spinner("📖 원고를 열어보는 중..."):
         content = extract_text(manuscript_file.name, manuscript_bytes)
 
     if len(content.strip()) < 100:
         st.error(
             "원고에서 텍스트를 100자 이상 추출하지 못했습니다. "
-            "파일 형식을 확인하시거나 .md/.txt로 변환 후 다시 시도해주세요."
+            "이미지로만 이루어진 PDF일 수 있어요. "
+            ".docx 또는 .md로 변환 후 다시 올려주시거나, "
+            "텍스트 내용이 정말 100자 이상인지 확인해주세요."
         )
         st.stop()
 
@@ -283,7 +289,7 @@ if submit:
         "memo": memo.strip() or "(없음)",
     }
 
-    with st.spinner("AI가 원고를 분석하는 중... (1~2분 소요)"):
+    with st.spinner("🤖 25년차 편집장이 원고를 읽고 있어요 · 1~2분 소요"):
         analysis = run_full_analysis(content, author_info)
 
     payload = {
@@ -292,7 +298,7 @@ if submit:
         "manuscript_bytes": manuscript_bytes,
     }
 
-    with st.spinner("저장·발송 중..."):
+    with st.spinner("📮 접수 처리 중..."):
         ok, msg = save_manuscript_submission(payload, analysis)
 
     if ok:
@@ -315,3 +321,8 @@ if submit:
         st.rerun()
     else:
         st.error(msg)
+        st.info(
+            "잠시 후 다시 시도해주세요. "
+            "계속 실패하면 대표 이메일(joyfuljun4@gmail.com)로 "
+            "원고 파일을 직접 보내주셔도 됩니다."
+        )
