@@ -84,3 +84,7 @@ SAVE_FILENAME = "session_data.json"
 
 # ─── 버전 ────────────────────────────────────
 APP_VERSION = "2.2.0"
+
+# ─── 투고 (원고 업로드 + AI 분석) ──────────────
+# book-coaching-app과 같은 시트 재사용 → 대표 한 곳에서 통합 관리
+GSHEET_URL = "https://docs.google.com/spreadsheets/d/1zo0jZMeWVhjXQ1pCZN2bcdze3DLpE-vmbQPZwp6j7Lg"
