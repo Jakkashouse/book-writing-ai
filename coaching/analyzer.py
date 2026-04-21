@@ -165,20 +165,38 @@ def infer_target_reader(content: str, market_data: dict) -> str:
 
 
 def calculate_scores(
-    text_stats: dict, market_data: dict, author_info: dict
+    text_stats: dict, market_data: dict, author_info: dict,
+    llm: dict | None = None,
 ) -> dict:
-    # 1. 시장성 (40)
+    """시장성 40점을 3축으로 재분배: 주제매칭 15 + 트렌드 10 + LLM잠재력 15.
+
+    LLM이 HIGH/MEDIUM/LOW를 안 주면(LLM 실패 시) 규칙 기반만으로도 최대 25점
+    채울 수 있게 설계 — LLM 유무에 따라 과도한 편차 없음.
+    """
+    # 1a. 규칙 기반 시장성: 3주제 매칭 (max 15)
     market_score = 0
     primary = market_data["primary_category"]
     primary_mentions = market_data["sorted_categories"][0][1]["total_mentions"]
     if primary != "기타":
-        market_score += 15
+        market_score += 8
     if primary_mentions > 50:
-        market_score += 10
+        market_score += 7
     elif primary_mentions > 20:
-        market_score += 5
+        market_score += 4
+
+    # 1b. 트렌드 키워드 (max 10)
     trending_count = len(market_data["trending_matches"])
-    market_score += min(trending_count * 3, 15)
+    market_score += min(trending_count * 2, 10)
+
+    # 1c. LLM 시장 잠재력 (max 15) — 원고 의미 이해 기반
+    llm_potential = {"HIGH": 15, "MEDIUM": 9, "LOW": 3}
+    if llm:
+        market_score += llm_potential.get(
+            str(llm.get("market_potential", "")).upper(), 0
+        )
+    # LLM 실패시 규칙 기반만으로도 완성도 우선 — 25/40
+
+    market_score = min(market_score, 40)
 
     # 2. 저자 전문성 (30) — 경력 + 자격
     expertise_score = 0
@@ -252,11 +270,31 @@ def build_email_report(
 ) -> str:
     grade, label, action = classification
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    llm = llm or {}
 
-    trending = ", ".join(market_data["trending_matches"].keys()) or "(매칭 없음)"
-    pains_text = "\n".join(f"  - {p}" for p in ai_pains) if ai_pains else "  - (추출 실패)"
+    # ─── [2] AI가 파악한 책 — LLM 우선, 없으면 규칙 기반 폴백 ───
+    book_category = llm.get("book_category") or market_data["primary_category"]
+    pitch = llm.get("one_line_pitch") or "(LLM 분석 없음)"
+    who = llm.get("who_should_read") or ai_target
+    killer = llm.get("killer_line") or "(추출 안 됨)"
 
-    # LLM 섹션 (있으면 추가)
+    pains = llm.get("reader_pains") or ai_pains or []
+    pains_block = (
+        "\n".join(f"  - {p}" for p in pains[:3]) if pains else "  - (추출 실패)"
+    )
+
+    strengths = llm.get("strengths") or []
+    strengths_block = (
+        "\n".join(f"  - {s}" for s in strengths[:3]) if strengths else "  - (LLM 분석 없음)"
+    )
+
+    titles = llm.get("title_suggestions") or []
+    titles_block = (
+        "\n".join(f"  {i+1}. {t}" for i, t in enumerate(titles[:3]))
+        if titles else "  (LLM 분석 없음)"
+    )
+
+    # LLM 심층 섹션 (점수·편집 우선순위·우려)
     llm_section = ""
     if llm:
         try:
@@ -264,6 +302,8 @@ def build_email_report(
             llm_section = format_llm_section(llm)
         except Exception:
             llm_section = ""
+
+    trending = ", ".join(market_data["trending_matches"].keys()) or "(매칭 없음)"
 
     return f"""━━━━━━━━━━━━━━━━━━━━━━━
   📮 투고 접수 + AI 분석
@@ -282,11 +322,19 @@ def build_email_report(
 - 메모: {author_info.get('memo', '-')}
 
 [2] AI가 원고에서 파악한 책
-- 주제 카테고리: {market_data['primary_category']}
-- 트렌드 키워드: {trending}
-- 추정 타겟 독자: {ai_target}
-- 독자 고통 포인트 후보:
-{pains_text}
+💡 한 줄 소개: {pitch}
+📖 주제·분야: {book_category}
+🎯 핵심 독자: {who}
+✨ 킬러 문장: "{killer}"
+
+💭 이 책이 해결하는 독자의 고통:
+{pains_block}
+
+🌟 이 원고가 빛나는 강점:
+{strengths_block}
+
+📚 제안 제목 후보:
+{titles_block}
 
 [3] 원고 기본 정보
 - 글자수: {text_stats['chars_no_space']:,}자 (공백제외)
@@ -295,7 +343,7 @@ def build_email_report(
 - 미완성 표식: {len(text_stats['placeholders'])}개
 
 [4] 종합 점수 (100점 만점)
-- 시장성:   {scores['market']:2d}/40
+- 시장성:   {scores['market']:2d}/40  (3주제매칭 15 + 트렌드 10 + LLM잠재력 15)
 - 전문성:   {scores['expertise']:2d}/30
 - SNS:      {scores['sns']:2d}/20
 - 완성도:   {scores['completion']:2d}/10
@@ -304,7 +352,11 @@ def build_email_report(
 
 [5] 등급: {grade}  ({label})
    → {action}
-{llm_section}━━━━━━━━━━━━━━━━━━━━━━━
+{llm_section}
+[참고] 규칙 기반 키워드 (LLM과 다를 수 있음 — 참고용)
+- 키워드 카테고리: {market_data['primary_category']}
+- 트렌드 키워드: {trending}
+━━━━━━━━━━━━━━━━━━━━━━━
 """
 
 
@@ -315,11 +367,10 @@ def run_full_analysis(content: str, author_info: dict, use_llm: bool = True) -> 
     """
     text_stats = analyze_text(content)
     market_data = analyze_market_fit(content)
-    scores = calculate_scores(text_stats, market_data, author_info)
-    classification = classify_submission(scores)
     ai_target = infer_target_reader(content, market_data)
     ai_pains = extract_reader_pains(content)
 
+    # LLM 먼저 — 점수 계산에 market_potential 반영되도록
     llm = {}
     if use_llm:
         try:
@@ -327,6 +378,9 @@ def run_full_analysis(content: str, author_info: dict, use_llm: bool = True) -> 
             llm = analyze_llm(content)
         except Exception:
             llm = {}
+
+    scores = calculate_scores(text_stats, market_data, author_info, llm=llm)
+    classification = classify_submission(scores)
 
     email_body = build_email_report(
         text_stats, market_data, scores, classification,
