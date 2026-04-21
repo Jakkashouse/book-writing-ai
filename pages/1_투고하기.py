@@ -108,13 +108,18 @@ with col3:
 with col4:
     title_candidate = st.text_input("제목 후보 (있으면)", placeholder="예: 퇴사 말고 재설계")
 
-credentials = st.multiselect(
-    "보유한 자격·이력 (중복 선택)",
-    [
+st.markdown("### 🏅 보유한 자격·이력 (해당하는 것 모두 클릭)")
+credentials = st.pills(
+    "자격·이력",
+    options=[
         "대학 강의·교수", "기업·공공 강연 50회 이상", "자격증·전문 라이선스",
         "유튜브·블로그 정기 운영", "언론 기고·인터뷰", "기출간 도서 있음",
     ],
+    selection_mode="multi",
+    label_visibility="collapsed",
 )
+if credentials is None:
+    credentials = []
 
 st.markdown("### 📱 SNS·플랫폼 (없으면 0)")
 col5, col6, col7, col8 = st.columns(4)
@@ -130,7 +135,7 @@ with col8:
 st.markdown("### 📚 저자 구매 의향")
 st.caption(
     "저자는 정가의 **60%**로 구매 가능합니다. "
-    "지인 선물·강의 교재·명함 대용으로 활용하시며, 보통 100~300부 준비하세요."
+    "지인 선물·강의 교재·명함 대용으로 활용하시면 됩니다."
 )
 author_purchase = st.radio(
     "출간 시 저자 구매 의향 *",
@@ -139,15 +144,19 @@ author_purchase = st.radio(
     horizontal=True,
 )
 
-st.markdown("### 🎯 상담에서 얻고 싶은 것 (복수 선택)")
-consult_topics = st.multiselect(
+st.markdown("### 🎯 상담에서 얻고 싶은 것 (해당하는 것 모두 클릭)")
+consult_topics = st.pills(
     "상담 희망 사항",
-    [
+    options=[
         "주제 구체화·포지셔닝", "목차 구성 피드백", "출간 방향 (자비/기획/독립)",
         "브랜딩·수익화 전략", "판매·마케팅 전략", "기타",
     ],
+    selection_mode="multi",
     default=["목차 구성 피드백"],
+    label_visibility="collapsed",
 )
+if consult_topics is None:
+    consult_topics = []
 
 memo = st.text_area(
     "하고 싶은 말 / 궁금한 점 (선택)", placeholder="편하게 적어주세요", height=80
