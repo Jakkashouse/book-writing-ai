@@ -8,7 +8,7 @@ import json
 import streamlit as st
 from pathlib import Path
 from datetime import datetime
-from config import TOTAL_PHASES, DATA_DIR, SAVE_FILENAME, MILESTONES
+from config import TOTAL_PHASES, DATA_DIR, SAVE_FILENAME, MILESTONES, GSHEET_URL
 
 # Phase별 진행률 가중치
 # 1단계(발견/제목) 완료 = 40%, 2단계(구조화/목차) 완료 = 80%
@@ -377,6 +377,151 @@ def send_submission_email(submission: dict):
             server.login(email_config["smtp_user"], email_config["smtp_pass"])
             server.send_message(msg)
 
+        return True
+    except Exception:
+        return False
+
+
+# ══════════════════════════════════════════════════
+# 원고 업로드 투고 시스템 (pages/1_투고하기.py 전용)
+# - 기존 투고 시스템(위쪽)과 병존
+# - 구글시트 '투고_원고접수' 탭 + 대표 이메일 리포트 + 원고 첨부
+# ══════════════════════════════════════════════════
+
+def _get_gsheet_client():
+    """서비스 계정으로 구글시트 클라이언트 생성 (없으면 None)."""
+    try:
+        import gspread
+        from google.oauth2.service_account import Credentials
+        creds_dict = dict(st.secrets["gcp_service_account"])
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive",
+        ]
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+        return gspread.authorize(creds)
+    except Exception:
+        return None
+
+
+def _get_spreadsheet():
+    gc = _get_gsheet_client()
+    if gc is None:
+        return None
+    try:
+        return gc.open_by_url(GSHEET_URL)
+    except Exception:
+        return None
+
+
+def _get_or_create_worksheet(spreadsheet, title: str, headers: list):
+    import gspread
+    try:
+        ws = spreadsheet.worksheet(title)
+    except gspread.WorksheetNotFound:
+        ws = spreadsheet.add_worksheet(title=title, rows=1000, cols=len(headers))
+        ws.update(f"A1:{chr(64+len(headers))}1", [headers])
+        ws.format(f"A1:{chr(64+len(headers))}1", {"textFormat": {"bold": True}})
+    return ws
+
+
+def save_manuscript_submission(payload: dict, analysis: dict) -> tuple[bool, str]:
+    """원고 투고 전용 저장 + 대표 이메일 리포트."""
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    author = payload.get("name", "무명").strip() or "무명"
+    grade, label, _ = analysis["classification"]
+    score = analysis["scores"]["total"]
+
+    sheet_ok = False
+    spreadsheet = _get_spreadsheet()
+    if spreadsheet is not None:
+        headers = [
+            "접수시간", "작가명", "이메일", "연락처",
+            "직업·경력", "제목 후보", "SNS 팔로워", "SNS 등급",
+            "저자 구매 의향", "상담 희망", "메모",
+            "글자수", "주제 카테고리", "트렌드 키워드",
+            "점수", "등급", "원고 파일명", "설문지 파일명",
+        ]
+        try:
+            ws = _get_or_create_worksheet(spreadsheet, "투고_원고접수", headers)
+            ws.append_row([
+                now, author,
+                payload.get("email", ""), payload.get("phone", ""),
+                payload.get("profession", ""), payload.get("title_candidate", ""),
+                payload.get("total_followers", 0), analysis["scores"]["sns_tier"],
+                payload.get("author_purchase", ""), payload.get("consult_topics", ""),
+                payload.get("memo", ""),
+                analysis["text_stats"]["chars_no_space"],
+                analysis["market_data"]["primary_category"],
+                ", ".join(analysis["market_data"]["trending_matches"].keys()),
+                score, grade,
+                payload.get("manuscript_filename", ""),
+                payload.get("survey_filename", "") or "(미업로드)",
+            ], value_input_option="USER_ENTERED")
+            sheet_ok = True
+        except Exception:
+            pass
+
+    email_ok = _send_manuscript_email(payload, analysis)
+
+    if sheet_ok and email_ok:
+        return True, "✅ 투고 접수 완료! 대표님 메일과 구글시트에 기록됐습니다."
+    if email_ok:
+        return True, "✅ 접수 완료 (이메일 발송됨). 시트 저장은 실패했으나 누락 없음."
+    if sheet_ok:
+        return True, "✅ 접수 완료 (시트 저장됨). 이메일 발송은 실패 — 대표 확인 필요."
+    return False, "⚠️ 저장/발송 모두 실패. 네트워크 확인 후 다시 시도해주세요."
+
+
+def _send_manuscript_email(payload: dict, analysis: dict) -> bool:
+    """원고 투고용 대표 이메일 — 분석 리포트 본문 + 원고/설문지 파일 첨부."""
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.base import MIMEBase
+    from email import encoders
+
+    try:
+        cfg = st.secrets.get("email_notify", {})
+        to_email = cfg.get("to", "")
+        smtp_server = cfg.get("smtp_server", "smtp.gmail.com")
+        smtp_port = int(cfg.get("smtp_port", 587))
+        smtp_user = cfg.get("smtp_user", "")
+        smtp_pass = cfg.get("smtp_pass", "")
+        if not (to_email and smtp_user and smtp_pass):
+            return False
+
+        grade, _label, _ = analysis["classification"]
+        score = analysis["scores"]["total"]
+        category = analysis["market_data"]["primary_category"]
+        author = payload.get("name", "무명")
+
+        msg = MIMEMultipart()
+        msg["Subject"] = f"[투고] {author} — {grade}등급 {score}점 — {category}"
+        msg["From"] = smtp_user
+        msg["To"] = to_email
+        msg.attach(MIMEText(analysis["email_body"], "plain", "utf-8"))
+
+        for key_data, key_name in (
+            ("manuscript_bytes", "manuscript_filename"),
+            ("survey_bytes", "survey_filename"),
+        ):
+            data = payload.get(key_data)
+            fname = payload.get(key_name)
+            if data and fname:
+                part = MIMEBase("application", "octet-stream")
+                part.set_payload(data)
+                encoders.encode_base64(part)
+                part.add_header(
+                    "Content-Disposition", "attachment",
+                    filename=("utf-8", "", fname),
+                )
+                msg.attach(part)
+
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
         return True
     except Exception:
         return False
