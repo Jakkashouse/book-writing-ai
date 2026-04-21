@@ -14,11 +14,30 @@ from coaching.analyzer import run_full_analysis
 from coaching.context_manager import save_manuscript_submission
 from coaching.file_reader import extract_text, is_supported, SUPPORTED_EXTS
 
+# ─── 랜딩 모드 판별 (?landing=1이면 사이드바·메뉴 전부 숨김) ──────
+_params = st.query_params
+IS_LANDING = _params.get("landing") == "1"
+
 st.set_page_config(
     page_title="투고하기 | 작가의집",
     page_icon="📮",
     layout="centered",
+    initial_sidebar_state="collapsed" if IS_LANDING else "expanded",
 )
+
+if IS_LANDING:
+    st.markdown(
+        """
+        <style>
+        [data-testid="stSidebar"] { display: none !important; }
+        [data-testid="collapsedControl"] { display: none !important; }
+        [data-testid="stHeader"] { visibility: hidden; }
+        #MainMenu { visibility: hidden; }
+        footer { visibility: hidden; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # ─── 상단 히어로 ──────────────────────────────
 st.title("📮 당신의 원고, 여기서 시작됩니다")
@@ -45,9 +64,13 @@ if st.session_state.get("submission_done"):
     info = st.session_state.get("submission_result", {})
     grade = info.get("grade", "?")
     score = info.get("score", 0)
-    category = info.get("category", "-")
     author = info.get("author", "")
     pitch = info.get("pitch", "")
+    book_category = info.get("book_category", "")
+    killer = info.get("killer", "")
+    strengths = info.get("strengths") or []
+    titles = info.get("titles") or []
+    who = info.get("who_should_read", "")
 
     st.success(f"**{author} 작가님, 원고 잘 받았습니다.** 🎉")
     st.markdown(
@@ -55,11 +78,36 @@ if st.session_state.get("submission_done"):
 ### 📊 AI 1차 분석 (방금 끝났어요)
 - **종합 점수**: {score}/100점
 - **등급**: {grade}
-- **주제 카테고리**: {category}
 """
     )
+
     if pitch:
-        st.info(f"💬 **AI가 파악한 이 책 한 줄**: {pitch}")
+        st.info(f"💡 **AI가 파악한 이 책 한 줄**\n\n{pitch}")
+
+    if book_category:
+        st.markdown(f"📖 **주제·분야**: {book_category}")
+
+    if who:
+        st.markdown(f"🎯 **핵심 독자**: {who}")
+
+    if killer:
+        st.markdown(
+            f"""
+> ✨ **원고에서 뽑은 킬러 문장**
+>
+> *"{killer}"*
+"""
+        )
+
+    if strengths:
+        st.markdown("### 🌟 이 원고가 빛나는 3가지")
+        for s in strengths[:3]:
+            st.markdown(f"- {s}")
+
+    if titles:
+        st.markdown("### 📚 AI가 제안하는 제목 후보")
+        for i, t in enumerate(titles[:3], 1):
+            st.markdown(f"{i}. **{t}**")
 
     st.markdown("---")
     st.markdown("### 📅 지금 바로 다음 한 걸음")
@@ -249,13 +297,19 @@ if submit:
 
     if ok:
         grade, label, _ = analysis["classification"]
+        llm = analysis.get("llm") or {}
         st.session_state["submission_done"] = True
         st.session_state["submission_result"] = {
             "author": name.strip(),
             "grade": f"{grade} ({label})",
             "score": analysis["scores"]["total"],
-            "category": analysis["market_data"]["primary_category"],
-            "pitch": (analysis.get("llm") or {}).get("one_line_pitch", ""),
+            "pitch": llm.get("one_line_pitch", ""),
+            "book_category": llm.get("book_category", "")
+                             or analysis["market_data"]["primary_category"],
+            "who_should_read": llm.get("who_should_read", ""),
+            "killer": llm.get("killer_line", ""),
+            "strengths": llm.get("strengths") or [],
+            "titles": llm.get("title_suggestions") or [],
         }
         st.balloons()
         st.rerun()
