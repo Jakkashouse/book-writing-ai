@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import re
 
-SYSTEM_PROMPT = """당신은 작가의집 출판사의 25년차 편집장입니다.
+SYSTEM_PROMPT = """당신은 작가의집 출판사의 대표이자 7년차 책쓰기 코치입니다.
 투고된 원고를 읽고 아래 JSON 스키마로만 평가를 내보냅니다. 설명·인사말·마크다운 금지.
 
 {
@@ -100,7 +100,7 @@ def format_llm_section(llm: dict) -> str:
     )
 
     return f"""
-[LLM 심층 평가 — 25년차 편집장 관점]
+[심층 평가 — 7년차 책쓰기 코치·출판사 대표 관점]
 - 문장력:      {llm.get('sentence_score', '-')}/20
 - 구성·논리:   {llm.get('structure_score', '-')}/20
 - 차별성:      {llm.get('differentiation_score', '-')}/10

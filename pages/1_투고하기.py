@@ -289,7 +289,7 @@ if submit:
         "memo": memo.strip() or "(없음)",
     }
 
-    with st.spinner("🤖 25년차 편집장이 원고를 읽고 있어요 · 1~2분 소요"):
+    with st.spinner("🤖 7년차 책쓰기 코치 및 출판사 대표가 원고를 직접 보고 있어요 · 1~2분 소요"):
         analysis = run_full_analysis(content, author_info)
 
     payload = {
