@@ -474,34 +474,34 @@ def save_manuscript_submission(payload: dict, analysis: dict) -> tuple[bool, str
 
 
 def _send_manuscript_email(payload: dict, analysis: dict) -> bool:
-    """원고 투고용 대표 이메일 — 분석 리포트 본문 + 원고/설문지 파일 첨부."""
-    import smtplib
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
-    from email.mime.base import MIMEBase
-    from email import encoders
+    """원고 투고용 대표 이메일 — Resend API로 발송 (+원고 파일 첨부).
+
+    Streamlit Secrets에 RESEND_API_KEY, ADMIN_EMAIL(선택) 필요.
+    RESEND_FROM(선택)으로 발신주소 오버라이드 가능.
+    기본 발신주소는 onboarding@resend.dev (도메인 미인증 시 Resend 기본).
+    """
+    import base64
 
     try:
-        cfg = st.secrets.get("email_notify", {})
-        to_email = cfg.get("to", "")
-        smtp_server = cfg.get("smtp_server", "smtp.gmail.com")
-        smtp_port = int(cfg.get("smtp_port", 587))
-        smtp_user = cfg.get("smtp_user", "")
-        smtp_pass = cfg.get("smtp_pass", "")
-        if not (to_email and smtp_user and smtp_pass):
+        import resend
+    except ImportError:
+        return False
+
+    try:
+        api_key = st.secrets.get("RESEND_API_KEY", "")
+        to_email = st.secrets.get("ADMIN_EMAIL", "joyfuljun4@gmail.com")
+        from_email = st.secrets.get("RESEND_FROM", "onboarding@resend.dev")
+        if not api_key:
             return False
+
+        resend.api_key = api_key
 
         grade, _label, _ = analysis["classification"]
         score = analysis["scores"]["total"]
         category = analysis["market_data"]["primary_category"]
         author = payload.get("name", "무명")
 
-        msg = MIMEMultipart()
-        msg["Subject"] = f"[투고] {author} — {grade}등급 {score}점 — {category}"
-        msg["From"] = smtp_user
-        msg["To"] = to_email
-        msg.attach(MIMEText(analysis["email_body"], "plain", "utf-8"))
-
+        attachments = []
         for key_data, key_name in (
             ("manuscript_bytes", "manuscript_filename"),
             ("survey_bytes", "survey_filename"),
@@ -509,19 +509,21 @@ def _send_manuscript_email(payload: dict, analysis: dict) -> bool:
             data = payload.get(key_data)
             fname = payload.get(key_name)
             if data and fname:
-                part = MIMEBase("application", "octet-stream")
-                part.set_payload(data)
-                encoders.encode_base64(part)
-                part.add_header(
-                    "Content-Disposition", "attachment",
-                    filename=("utf-8", "", fname),
-                )
-                msg.attach(part)
+                attachments.append({
+                    "filename": fname,
+                    "content": base64.b64encode(data).decode("ascii"),
+                })
 
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.send_message(msg)
+        params = {
+            "from": from_email,
+            "to": [to_email],
+            "subject": f"[투고] {author} — {grade}등급 {score}점 — {category}",
+            "text": analysis["email_body"],
+        }
+        if attachments:
+            params["attachments"] = attachments
+
+        resend.Emails.send(params)
         return True
     except Exception:
         return False
