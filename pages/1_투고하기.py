@@ -1,11 +1,11 @@
 """
-📮 투고 랜딩 + 원고/설문 접수 + AI 자동 분석
+📮 투고 랜딩 + 원고 접수 + AI 자동 분석
 
 URL: /투고하기 (Streamlit multipage 자동 라우팅)
 흐름:
-  1) 6문항 폼 + 원고/설문지 파일 업로드
+  1) 6문항 폼 + 원고 파일 업로드
   2) 제출 → 원고 텍스트 추출 → analyzer.run_full_analysis
-  3) 구글시트 저장 + 대표 이메일 발송 (파일 첨부 + 리포트 본문)
+  3) 구글시트 저장 + 대표 이메일 발송 (원고 첨부 + 리포트 본문)
   4) 작가에게 접수 확인 화면
 """
 import streamlit as st
@@ -167,11 +167,6 @@ manuscript_file = st.file_uploader(
     type=["md", "txt", "docx", "pdf"],
     help="가급적 전체 원고. 일부라도 가능하지만 100자 이상 필요합니다.",
 )
-survey_file = st.file_uploader(
-    "기존 작성한 설문지 (선택)",
-    type=["md", "txt", "docx", "pdf"],
-    help="이미 작가의집 통합 설문지를 작성하신 분만 업로드해주세요.",
-)
 
 st.divider()
 
@@ -236,16 +231,10 @@ if submit:
     with st.spinner("AI가 원고를 분석하는 중... (1~2분 소요)"):
         analysis = run_full_analysis(content, author_info)
 
-    # 4) 설문지 파일 (있으면) 준비
-    survey_bytes = survey_file.getvalue() if survey_file is not None else None
-    survey_filename = survey_file.name if survey_file is not None else ""
-
     payload = {
         **author_info,
         "manuscript_filename": manuscript_file.name,
         "manuscript_bytes": manuscript_bytes,
-        "survey_filename": survey_filename,
-        "survey_bytes": survey_bytes,
     }
 
     with st.spinner("저장·발송 중..."):
