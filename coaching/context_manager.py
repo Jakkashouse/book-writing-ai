@@ -414,36 +414,128 @@ def _get_spreadsheet():
         return None
 
 
+def _col_letter(n: int) -> str:
+    """1→A, 26→Z, 27→AA (gspread 셀 범위용)."""
+    s = ""
+    while n > 0:
+        n, r = divmod(n - 1, 26)
+        s = chr(65 + r) + s
+    return s
+
+
 def _get_or_create_worksheet(spreadsheet, title: str, headers: list):
+    """시트 탭을 가져오거나 생성. 헤더가 짧으면 확장 반영 (backward-compat)."""
     import gspread
+    end_col = _col_letter(len(headers))
     try:
         ws = spreadsheet.worksheet(title)
+        # 기존 탭이어도 헤더가 더 길어졌으면 덮어쓰기 (확장만, 파괴 없음)
+        try:
+            existing = ws.row_values(1)
+            if len(existing) < len(headers):
+                ws.update(f"A1:{end_col}1", [headers])
+                ws.format(f"A1:{end_col}1", {"textFormat": {"bold": True}})
+        except Exception:
+            pass
     except gspread.WorksheetNotFound:
         ws = spreadsheet.add_worksheet(title=title, rows=1000, cols=len(headers))
-        ws.update(f"A1:{chr(64+len(headers))}1", [headers])
-        ws.format(f"A1:{chr(64+len(headers))}1", {"textFormat": {"bold": True}})
+        ws.update(f"A1:{end_col}1", [headers])
+        ws.format(f"A1:{end_col}1", {"textFormat": {"bold": True}})
     return ws
 
 
+# ─── 긴급도 태깅 (S급/VIP 구매) ────────────────
+
+def _parse_purchase_copies(label: str) -> int:
+    """'200부' → 200, '300부 이상' → 300, '없음' → 0, '상담 후 결정' → 0."""
+    if not label:
+        return 0
+    import re as _re
+    m = _re.search(r"(\d+)", str(label))
+    return int(m.group(1)) if m else 0
+
+
+def _build_admin_subject_and_banner(
+    grade: str, score: int, author: str, category: str,
+    purchase_label: str,
+) -> tuple[str, str]:
+    """
+    대표 메일 제목/본문 상단 배너 생성.
+    우선순위:
+      1) S등급 + 200부 이상  → 🔥🔥 [S급 VIP · 200부+]
+      2) S등급 + 100부 이상  → 🔥 [S급 · 100부+]
+      3) S등급만              → 🔥 [S급 긴급]
+      4) A등급 + 100부 이상  → ⭐ [A급 · 100부+]
+      5) 기본                 → [투고]
+    """
+    copies = _parse_purchase_copies(purchase_label)
+    prefix = "[투고]"
+    banner = ""
+
+    if grade == "S" and copies >= 200:
+        prefix = "🔥🔥 [S급 VIP · 200부+]"
+        banner = (
+            "════════════════════════════\n"
+            f"🔥🔥 최우선 상담 대상 — 작가가 자가구매 200부+ 약속\n"
+            f"    자가구매 약정: {purchase_label}  ·  등급 S ({score}점)\n"
+            f"    → 대표님 24시간 이내 직접 연락 권장\n"
+            "════════════════════════════\n\n"
+        )
+    elif grade == "S" and copies >= 100:
+        prefix = "🔥 [S급 · 100부+]"
+        banner = (
+            "═══════════════════════\n"
+            f"🔥 우선 상담 대상 — 자가구매 100부+ 약속 (S급)\n"
+            f"    자가구매 약정: {purchase_label}  ·  등급 S ({score}점)\n"
+            "═══════════════════════\n\n"
+        )
+    elif grade == "S":
+        prefix = "🔥 [S급 긴급]"
+        banner = (
+            f"🔥 S급 접수 — 기획출판 우선 검토 대상 (자가구매 {purchase_label})\n\n"
+        )
+    elif grade == "A" and copies >= 100:
+        prefix = "⭐ [A급 · 100부+]"
+        banner = (
+            f"⭐ A급 + 자가구매 {copies}부+ 약속 — 적극 상담 추천\n\n"
+        )
+
+    subject = f"{prefix} {author} — {grade}등급 {score}점 — {category}"
+    return subject, banner
+
+
+SHEET_HEADERS = [
+    "접수시간", "작가명", "이메일", "연락처",
+    "직업·경력", "제목 후보", "SNS 팔로워", "SNS 등급",
+    "저자 구매 의향", "상담 희망", "메모",
+    "글자수", "주제 카테고리", "트렌드 키워드",
+    "점수", "등급", "원고 파일명", "설문지 파일명",
+    # 운영 자동화용
+    "원고 미리보기", "작가 회신 발송", "3일 후속 발송", "7일 후속 발송", "상담 예약",
+]
+
+
 def save_manuscript_submission(payload: dict, analysis: dict) -> tuple[bool, str]:
-    """원고 투고 전용 저장 + 대표 이메일 리포트."""
+    """원고 투고 전용 저장 + 대표 이메일 리포트 + 작가 회신 이메일."""
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     author = payload.get("name", "무명").strip() or "무명"
-    grade, label, _ = analysis["classification"]
+    grade, _label, _ = analysis["classification"]
     score = analysis["scores"]["total"]
+
+    # 원고 첫 500자 (대시보드 미리보기용)
+    manuscript_text = (payload.get("manuscript_text") or "").strip()
+    preview = manuscript_text[:500].replace("\n", " ")
+    if len(manuscript_text) > 500:
+        preview = preview + " …"
+
+    # 작가 회신 메일 먼저 시도 (admin 메일보다 빠르게 나가야 UX 좋음)
+    reply_ok = _send_author_reply_email(payload, analysis)
 
     sheet_ok = False
     spreadsheet = _get_spreadsheet()
     if spreadsheet is not None:
-        headers = [
-            "접수시간", "작가명", "이메일", "연락처",
-            "직업·경력", "제목 후보", "SNS 팔로워", "SNS 등급",
-            "저자 구매 의향", "상담 희망", "메모",
-            "글자수", "주제 카테고리", "트렌드 키워드",
-            "점수", "등급", "원고 파일명", "설문지 파일명",
-        ]
         try:
-            ws = _get_or_create_worksheet(spreadsheet, "투고_원고접수", headers)
+            ws = _get_or_create_worksheet(spreadsheet, "투고_원고접수", SHEET_HEADERS)
             ws.append_row([
                 now, author,
                 payload.get("email", ""), payload.get("phone", ""),
@@ -457,16 +549,22 @@ def save_manuscript_submission(payload: dict, analysis: dict) -> tuple[bool, str
                 score, grade,
                 payload.get("manuscript_filename", ""),
                 payload.get("survey_filename", "") or "(미업로드)",
+                # 운영 자동화용
+                preview,
+                "발송" if reply_ok else "실패",
+                "",  # 3일 후속 발송 (cron이 채움)
+                "",  # 7일 후속 발송 (cron이 채움)
+                "",  # 상담 예약 (대표가 수동 체크)
             ], value_input_option="USER_ENTERED")
             sheet_ok = True
         except Exception:
             pass
 
-    email_ok = _send_manuscript_email(payload, analysis)
+    admin_ok = _send_manuscript_email(payload, analysis)
 
-    if sheet_ok and email_ok:
-        return True, "✅ 투고 접수 완료! 대표님 메일과 구글시트에 기록됐습니다."
-    if email_ok:
+    if sheet_ok and admin_ok:
+        return True, "✅ 투고 접수 완료! 대표님 메일·작가 회신·구글시트 모두 OK."
+    if admin_ok:
         return True, "✅ 접수 완료 (이메일 발송됨). 시트 저장은 실패했으나 누락 없음."
     if sheet_ok:
         return True, "✅ 접수 완료 (시트 저장됨). 이메일 발송은 실패 — 대표 확인 필요."
@@ -476,9 +574,10 @@ def save_manuscript_submission(payload: dict, analysis: dict) -> tuple[bool, str
 def _send_manuscript_email(payload: dict, analysis: dict) -> bool:
     """원고 투고용 대표 이메일 — Resend API로 발송 (+원고 파일 첨부).
 
+    S급/VIP 자가구매 시 제목·본문 상단에 긴급도 배너를 자동 삽입해
+    대표님이 메일 리스트에서 바로 우선순위 파악 가능.
+
     Streamlit Secrets에 RESEND_API_KEY, ADMIN_EMAIL(선택) 필요.
-    RESEND_FROM(선택)으로 발신주소 오버라이드 가능.
-    기본 발신주소는 onboarding@resend.dev (도메인 미인증 시 Resend 기본).
     """
     import base64
 
@@ -500,6 +599,11 @@ def _send_manuscript_email(payload: dict, analysis: dict) -> bool:
         score = analysis["scores"]["total"]
         category = analysis["market_data"]["primary_category"]
         author = payload.get("name", "무명")
+        purchase = payload.get("author_purchase", "")
+
+        subject, banner = _build_admin_subject_and_banner(
+            grade, score, author, category, purchase,
+        )
 
         attachments = []
         for key_data, key_name in (
@@ -517,13 +621,156 @@ def _send_manuscript_email(payload: dict, analysis: dict) -> bool:
         params = {
             "from": from_email,
             "to": [to_email],
-            "subject": f"[투고] {author} — {grade}등급 {score}점 — {category}",
-            "text": analysis["email_body"],
+            "subject": subject,
+            "text": banner + analysis["email_body"],
         }
         if attachments:
             params["attachments"] = attachments
 
         resend.Emails.send(params)
+        return True
+    except Exception:
+        return False
+
+
+# ─── 작가 회신 메일 (등급별 CTA 분기) ────────────
+
+AUTHOR_REPLY_CTA_SA = """
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 다음 한 걸음: 대표 1:1 무료 상담
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+작가님 원고는 **출간 가능성이 높은 원고**로 판단됩니다.
+대표가 원고를 직접 읽고, 어울리는 출간 방향(기획출판·협업출판·자체)을
+맞춤으로 제안드리는 **15분 무료 상담**을 먼저 잡아주세요.
+
+👉 https://calendly.com/joyful4/goodbook
+    (제주/서울/비대면 모두 가능)
+
+상담이 부담스러우시면 이메일로만 상세 리포트 받으셔도 됩니다.
+"""
+
+AUTHOR_REPLY_CTA_B = """
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 다음 한 걸음: 방향 잡기부터 함께
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+작가님 원고는 **출간 잠재력을 보유한 원고**입니다.
+다만 기획 방향을 조금만 더 선명하게 다듬으면 훨씬 강해져요.
+
+추천 순서:
+1) **무료 5일 부트캠프** — 주제·독자 구체화
+   → https://jagabook.co.kr/bootcamp
+2) **100질문 챌린지 (9.9만, 완주 시 환급)** — 책 전체 구조 확정
+   → https://jagabook.co.kr/challenge
+3) 원하시면 1:1 무료 상담도 가능합니다 (제주/비대면 OK)
+   → https://calendly.com/joyful4/goodbook
+"""
+
+AUTHOR_REPLY_CTA_C = """
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌱 다음 한 걸음: 더 다듬어 다시 만나요
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+작가님의 이야기에서 반짝이는 부분이 분명히 보였어요.
+조금만 더 다듬으면 훨씬 빛날 원고입니다.
+
+무료로 받으실 수 있는 것:
+1) **100질문 PDF 리드마그넷** — 책 쓰기 전 정리해야 할 100가지
+   → 스티비 구독하시면 즉시 발송: https://stib.ee/cD9N
+2) **무료 5일 부트캠프** — 주제·독자·포지셔닝 다시 잡기
+   → https://jagabook.co.kr/bootcamp
+
+다시 원고 보내주시면, 같은 팀이 한 번 더 읽어드릴게요.
+"""
+
+
+def _cta_by_grade(grade: str) -> str:
+    if grade in ("S", "A"):
+        return AUTHOR_REPLY_CTA_SA
+    if grade == "B":
+        return AUTHOR_REPLY_CTA_B
+    return AUTHOR_REPLY_CTA_C
+
+
+def _send_author_reply_email(payload: dict, analysis: dict) -> bool:
+    """작가에게 접수 확인 + 등급별 맞춤 CTA 자동 회신.
+
+    S/A → 대표 1:1 상담 강하게
+    B   → 부트캠프 + 100질문 챌린지
+    C   → 100질문 PDF + 스티비 구독
+
+    실패해도 예외 안 냄 — 대표 메일은 별도로 나감.
+    """
+    try:
+        import resend
+    except ImportError:
+        return False
+
+    try:
+        api_key = st.secrets.get("RESEND_API_KEY", "")
+        from_email = st.secrets.get(
+            "RESEND_FROM_AUTHOR",
+            st.secrets.get("RESEND_FROM", "onboarding@resend.dev"),
+        )
+        author_email = (payload.get("email") or "").strip()
+        if not api_key or not author_email or "@" not in author_email:
+            return False
+
+        resend.api_key = api_key
+
+        grade, label, _ = analysis["classification"]
+        score = analysis["scores"]["total"]
+        author = payload.get("name", "작가")
+        llm = analysis.get("llm") or {}
+        pitch = llm.get("one_line_pitch") or ""
+        killer = llm.get("killer_line") or ""
+        strengths = llm.get("strengths") or []
+        titles = llm.get("title_suggestions") or []
+
+        strengths_block = "\n".join(f"  · {s}" for s in strengths[:3]) if strengths else ""
+        titles_block = (
+            "\n".join(f"  {i}. {t}" for i, t in enumerate(titles[:3], 1))
+            if titles else ""
+        )
+
+        body = f"""{author} 작가님,
+
+원고 잘 받았습니다. 방금 AI가 먼저 읽었고, 아래는 그 1차 분석입니다.
+대표는 며칠 안에 직접 원고를 다시 읽고 손편지 같은 피드백을 보내드릴게요.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📊 AI 1차 분석 요약
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+종합 점수: {score}/100점
+등급: {grade} ({label})
+"""
+
+        if pitch:
+            body += f"\n💡 AI가 파악한 책 한 줄:\n  {pitch}\n"
+        if killer:
+            body += f'\n✨ 원고에서 뽑은 문장:\n  "{killer}"\n'
+        if strengths_block:
+            body += f"\n🌟 이 원고가 빛나는 점:\n{strengths_block}\n"
+        if titles_block:
+            body += f"\n📚 제안 제목 후보:\n{titles_block}\n"
+
+        body += _cta_by_grade(grade)
+        body += (
+            "\n\n작가의집은 연 100권 출간하는 1인 출판사입니다. "
+            "작가님의 한 권이 우리 해 100권 중 하나가 될지, "
+            "함께 천천히 살펴보겠습니다.\n\n"
+            "— 작가의집 (대표 황준연)\n"
+            "https://jagabook.co.kr\n"
+        )
+
+        resend.Emails.send({
+            "from": from_email,
+            "to": [author_email],
+            "reply_to": "joyfuljun4@gmail.com",
+            "subject": f"[작가의집] {author} 작가님의 원고, 잘 받았습니다 (1차 분석 · {grade}등급)",
+            "text": body,
+        })
         return True
     except Exception:
         return False

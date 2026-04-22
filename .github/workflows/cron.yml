@@ -1,0 +1,117 @@
+name: 투고 자동화 cron
+
+# 각 job은 GitHub Actions 표준 UTC 기준. 주석에 KST 병기.
+#
+# 필요 GitHub Secrets:
+#   - RESEND_API_KEY         : Resend API 키 (Streamlit Cloud와 동일)
+#   - ADMIN_EMAIL            : 관리자 수신 이메일 (생략 시 joyfuljun4@gmail.com)
+#   - RESEND_FROM            : 발신 주소 (생략 시 onboarding@resend.dev)
+#   - GCP_SERVICE_ACCOUNT    : 서비스 계정 JSON 전체 문자열
+#   - GSHEET_URL             : 구글시트 URL
+
+on:
+  schedule:
+    # 매일 KST 10:00 = UTC 01:00 → 3일/7일 후속 이메일
+    - cron: '0 1 * * *'
+    # 매주 월요일 KST 09:00 = UTC 월요일 00:00 → 주간 리포트
+    - cron: '0 0 * * 1'
+    # 매월 1일 KST 02:00 = UTC 전날 17:00 → 월간 스냅샷 (여유있게 2일 KST)
+    - cron: '0 17 1 * *'
+  workflow_dispatch:
+    inputs:
+      job:
+        description: '수동 실행 대상'
+        required: true
+        default: 'followup_3d'
+        type: choice
+        options:
+          - followup_3d
+          - followup_7d
+          - weekly_report
+          - monthly_snapshot
+
+jobs:
+  daily-followup:
+    # 매일 한 번 (cron 중 01:00 UTC) — 3일/7일 후속을 연속 실행
+    if: github.event.schedule == '0 1 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deps
+        run: pip install gspread google-auth resend
+      - name: 3일 후속 발송
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          GSHEET_URL: ${{ secrets.GSHEET_URL }}
+        run: python -m scripts.followup_3d
+      - name: 7일 후속 발송
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          GSHEET_URL: ${{ secrets.GSHEET_URL }}
+        run: python -m scripts.followup_7d
+
+  weekly-report:
+    if: github.event.schedule == '0 0 * * 1'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deps
+        run: pip install gspread google-auth resend
+      - name: 주간 리포트 발송
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          GSHEET_URL: ${{ secrets.GSHEET_URL }}
+        run: python -m scripts.weekly_report
+
+  monthly-snapshot:
+    if: github.event.schedule == '0 17 1 * *'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deps
+        run: pip install gspread google-auth resend
+      - name: 월간 스냅샷 발송
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          GSHEET_URL: ${{ secrets.GSHEET_URL }}
+        run: python -m scripts.monthly_snapshot
+
+  manual:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deps
+        run: pip install gspread google-auth resend
+      - name: Run job (${{ inputs.job }})
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          GSHEET_URL: ${{ secrets.GSHEET_URL }}
+        run: python -m scripts.${{ inputs.job }}
