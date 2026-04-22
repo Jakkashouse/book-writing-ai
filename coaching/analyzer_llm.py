@@ -6,6 +6,9 @@ Claude API로 원고의 문장력·구성·차별성·주제·독자·강점을 
 2026-04-22: 장르별 프롬프트 분기 추가 (에세이/자기계발·실용/전문서).
 가벼운 텍스트 휴리스틱으로 장르 감지 → 해당 장르에 특화된 추가 지침을
 기본 프롬프트에 덧붙임. 감지 실패시 범용 평가.
+
+2026-04-22 (v2): 소설/픽션 장르 추가. 대사·화행동사로 감지하고
+논픽션 스키마(reader_pains 등)를 픽션 문맥으로 재해석하는 지침 덧붙임.
 """
 from __future__ import annotations
 
@@ -21,7 +24,7 @@ BASE_PROMPT = """당신은 작가의집 출판사의 대표이자 7년차 책쓰
   "differentiation_score": 0-10 사이 정수 (유사 도서 대비 차별성),
   "market_potential": "HIGH|MEDIUM|LOW",
   "book_category": "이 책의 주제·분야를 한 줄로 (예: 'ADHD 당사자의 AI 기반 자기경영 에세이', '50대 이직자를 위한 커리어 전환 실용서', '워킹맘의 육아 번아웃 극복기'). 고정 카테고리 아닌 자유 텍스트 — 원고 의미를 그대로 반영할 것.",
-  "detected_genre": "essay|howto|expert|general (원고의 주된 장르)",
+  "detected_genre": "essay|howto|expert|fiction|general (원고의 주된 장르)",
   "killer_line": "원고에서 뽑은 가장 인상적인 문장 하나 (50자 내외, 그대로 인용)",
   "one_line_pitch": "이 책을 한 문장으로 소개한다면 (30-60자)",
   "who_should_read": "이 책을 꼭 읽어야 할 독자 한 줄 (구체적 프로필)",
@@ -64,12 +67,33 @@ GENRE_GUIDANCE = {
 - 편집 우선순위: 용어 설명 부족·사례 부족·'저자만 아는 것' 부족을 먼저 짚을 것.
 - market_potential: 타깃 독자가 좁아도 구매력 높으면 HIGH 가능.
 """,
+    "fiction": """
+[장르 추가 지침 — 소설/픽션]
+※ 이 원고는 소설입니다. 논픽션 평가 기준(저자 권위·독자 고통 해결·실용성)을 적용하지 말고 픽션 기준으로만 판단하세요.
+- 문장력: 묘사의 구체성·대사의 생동감·장면 전환 리듬·시점 일관성을 최우선. 정보 전달 아님.
+- 구성 점수: 서사 구조(발단·전개·위기·절정·결말)·장면 배치·복선과 회수·훅의 강도.
+- 차별성: 동일 서브장르(로맨스/스릴러/SF/가정소설/성장소설 등) 대비 서사·캐릭터·설정의 신선도.
+- book_category: "1990년대 가족사 대하소설", "직장인 심리 스릴러", "여성서사 성장소설" 식으로 소설 서브장르 형식으로 표현.
+- reader_pains 필드는 픽션에 부적합 → **"이 소설이 독자에게 주는 감정/공명/대리만족 3가지"로 재해석해서 채우세요.** (예: "엄마와 화해를 미뤄온 40대의 눈물 포인트", "번아웃 직장인의 대리복수 카타르시스")
+- who_should_read: "이 소설을 사랑할 독자" 프로필 (예: "정유정·손원평을 즐겨 읽는 30-40대 여성").
+- strengths: 서사 훅·캐릭터 매력·설정의 독창성·문체 중 빛나는 3가지.
+- killer_line: 인상적인 대사나 묘사 한 줄.
+- title_suggestions: 소설 제목은 상징적·감각적이어야 함. 실용서 제목처럼 "X하는 법" 형식 금지.
+- edit_priorities: 도입부 훅 약함·시점 흔들림·대사 평면화·설정 설명 과다·클리셰 등에서 3개.
+- market_potential: 서브장르 시장성 + 웹소설·웹툰 원작화 가능성 있으면 HIGH 가능.
+- publishing_recommendation: 소설은 대부분 "기획출판" 또는 "재고". 자비/협업은 거의 선택지 아님.
+- honest_concerns: 소설 시장(초판 1500부 주류) 현실·동일 서브장르 경쟁·독자 픽업 포인트 관점에서.
+""",
     "general": "",
 }
 
 
 def _detect_genre(text: str) -> str:
-    """가벼운 휴리스틱으로 주된 장르 감지 → essay / howto / expert / general."""
+    """가벼운 휴리스틱으로 주된 장르 감지 → fiction / essay / howto / expert / general.
+
+    순서: howto/expert(강마커) → fiction(대사·화행) → essay(1인칭·서사) → general.
+    소설은 에세이와 서사 마커가 겹치므로 대사·화행동사 유무로 먼저 분리.
+    """
     sample = text[:8000]
 
     first_person = len(re.findall(r"(나는|내가|저는|제가|우리는)", sample))
@@ -86,6 +110,19 @@ def _detect_genre(text: str) -> str:
         sample,
     ))
 
+    # 소설 판별용: 대사 따옴표 블록 + 화행 동사
+    dialogue_blocks = len(re.findall(r'[""].{2,80}?[""]', sample))
+    if dialogue_blocks == 0:
+        # 일반 쌍따옴표/작은따옴표만 쓴 원고 대응
+        dialogue_blocks = len(re.findall(r'"[^"\n]{2,80}"', sample))
+    speech_verbs = len(re.findall(
+        r"(말했다|물었다|대답했다|외쳤다|속삭였다|중얼거렸다|소리쳤다|"
+        r"말한다|묻는다|대답한다|외친다|속삭인다|"
+        r"라고 말|라고 묻|라고 답|라고 외|고 말했|고 물었)",
+        sample,
+    ))
+    third_person = len(re.findall(r"(그녀는|그녀가|그녀의|그는|그가|그의)", sample))
+
     # 1인칭 비율
     fp_ratio = first_person / max(len(sample) / 500, 1)
 
@@ -93,6 +130,9 @@ def _detect_genre(text: str) -> str:
         return "howto"
     if expert_markers >= 8:
         return "expert"
+    # 소설: 대사 블록이 많거나 화행동사가 뚜렷하거나 3인칭+서사가 강함
+    if dialogue_blocks >= 6 or speech_verbs >= 8 or (third_person >= 15 and story_markers >= 15):
+        return "fiction"
     if fp_ratio >= 1.5 or story_markers >= 20:
         return "essay"
     return "general"
