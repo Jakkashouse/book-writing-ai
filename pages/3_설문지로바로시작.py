@@ -265,7 +265,7 @@ if st.session_state.pkg_result and not st.session_state.pkg_generating:
     st.markdown(
         """
 <div style="text-align:center; margin-top: 18px;">
-  <a href="https://expert-workbook.vercel.app/vibe" target="_blank"
+  <a href="https://expert-workbook.vercel.app/payment?plan=t2_standard" target="_blank"
      style="
        display:inline-block;
        padding: 14px 36px;
@@ -276,8 +276,19 @@ if st.session_state.pkg_result and not st.session_state.pkg_generating:
        text-decoration:none;
        font-size:16px;
      ">
-    T2 30일 코칭 자세히 보기 →
+    💳 T2 30일 코칭 바로 결제하기 (29만원) →
   </a>
+  <div style="margin-top:10px;">
+    <a href="https://expert-workbook.vercel.app/vibe#t1-cta" target="_blank"
+       style="
+         font-size:12px;
+         color:#888;
+         text-decoration:underline;
+         text-decoration-color:rgba(212,175,55,0.3);
+       ">
+      먼저 전체 7티어 가격표 보기 →
+    </a>
+  </div>
 </div>
         """,
         unsafe_allow_html=True,
