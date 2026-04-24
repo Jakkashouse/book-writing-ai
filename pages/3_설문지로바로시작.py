@@ -11,11 +11,115 @@
 """
 from __future__ import annotations
 
+import json
+import re
+from datetime import datetime, timedelta
+from pathlib import Path
+
 import streamlit as st
 import anthropic
 
 from config import ANTHROPIC_API_KEY, MODEL_NAME, MAX_TOKENS_LONG
 from coaching.file_reader import extract_text, is_supported, SUPPORTED_EXTS
+
+# ─── 남용 방지 설정 ──────────────────────────
+# 같은 이메일로 N회 이상 생성하면 차단
+# 기록 파일: ./data/vibe_draft_usage.jsonl (streamlit cloud 재시작 시 초기화됨)
+USAGE_LIMIT_PER_EMAIL = 2         # 이메일당 총 허용 횟수 (평생)
+USAGE_LIMIT_PER_DAY = 1            # 이메일당 하루 허용 횟수
+USAGE_COOLDOWN_HOURS = 24          # 쿨다운 시간
+ADMIN_BYPASS_EMAIL_SUFFIX = "@booksmith.kr"  # 대표님 이메일은 무제한
+
+DATA_DIR = Path("./data")
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+USAGE_LOG_FILE = DATA_DIR / "vibe_draft_usage.jsonl"
+
+
+def _normalize_email(email: str) -> str:
+    """이메일 소문자 · 앞뒤 공백 제거 · 점·+ alias 정규화 (gmail 기준)."""
+    e = (email or "").strip().lower()
+    if "@" not in e:
+        return e
+    local, domain = e.rsplit("@", 1)
+    # gmail alias 우회 방지: + 뒤 제거, 점 제거
+    if domain in {"gmail.com", "googlemail.com"}:
+        local = local.split("+", 1)[0].replace(".", "")
+    return f"{local}@{domain}"
+
+
+def _load_usage_records() -> list[dict]:
+    """사용 기록 전체 로드."""
+    if not USAGE_LOG_FILE.exists():
+        return []
+    records = []
+    try:
+        with USAGE_LOG_FILE.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    records.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+    except Exception:
+        pass
+    return records
+
+
+def _record_usage(email: str, name: str) -> None:
+    """사용 기록 한 줄 추가 (JSONL)."""
+    try:
+        with USAGE_LOG_FILE.open("a", encoding="utf-8") as f:
+            f.write(json.dumps({
+                "email": _normalize_email(email),
+                "name": name,
+                "at": datetime.now().isoformat(),
+            }, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
+def _check_usage_limit(email: str) -> tuple[bool, str]:
+    """
+    사용 가능 여부와 메시지 반환.
+    반환: (사용 가능?, 안내 메시지)
+    """
+    norm = _normalize_email(email)
+
+    # 관리자 무제한 통과
+    if norm.endswith(ADMIN_BYPASS_EMAIL_SUFFIX):
+        return True, ""
+
+    records = _load_usage_records()
+    my_records = [r for r in records if r.get("email") == norm]
+
+    if not my_records:
+        return True, ""
+
+    # 총 횟수 초과
+    if len(my_records) >= USAGE_LIMIT_PER_EMAIL:
+        return False, (
+            f"⚠️ 같은 이메일로는 총 **{USAGE_LIMIT_PER_EMAIL}회**까지만 체험 가능합니다. "
+            f"나머지 꼭지와 전체 40꼭지 완성은 **T2 30일 코칭(29만원)**에서 제공됩니다."
+        )
+
+    # 24시간 내 중복 차단
+    now = datetime.now()
+    for r in my_records:
+        try:
+            at = datetime.fromisoformat(r.get("at", ""))
+        except Exception:
+            continue
+        if (now - at) < timedelta(hours=USAGE_COOLDOWN_HOURS):
+            remaining = USAGE_COOLDOWN_HOURS - int((now - at).total_seconds() / 3600)
+            return False, (
+                f"⏱ 같은 이메일은 **{USAGE_COOLDOWN_HOURS}시간에 {USAGE_LIMIT_PER_DAY}회**만 사용 가능합니다. "
+                f"약 **{remaining}시간 후** 다시 이용하실 수 있습니다.\n\n"
+                f"기다리지 않고 바로 시작하시려면 **T2 30일 코칭**으로 진행해 주세요."
+            )
+
+    return True, ""
 
 # ─── 페이지 설정 ─────────────────────────────
 st.set_page_config(
@@ -131,15 +235,30 @@ with col1:
     )
 with col2:
     st.session_state.pkg_author_email = st.text_input(
-        "이메일 (선택)",
+        "이메일 *",
         value=st.session_state.pkg_author_email,
         max_chars=120,
+        help="체험 이력 관리용 · 같은 이메일로는 24시간 내 1회 가능",
     )
+
+
+def _is_valid_email(e: str) -> bool:
+    return bool(re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", e.strip()))
+
+
+email_valid = _is_valid_email(st.session_state.pkg_author_email)
+
+# 이메일 기반 사용 제한 체크
+limit_ok, limit_msg = (True, "")
+if email_valid:
+    limit_ok, limit_msg = _check_usage_limit(st.session_state.pkg_author_email)
 
 can_start = (
     bool(st.session_state.pkg_input_text.strip())
     and len(st.session_state.pkg_input_text.strip()) >= 80
     and bool(st.session_state.pkg_author_name.strip())
+    and email_valid
+    and limit_ok
 )
 
 if not can_start:
@@ -149,6 +268,31 @@ if not can_start:
         st.warning("설문지 내용이 너무 짧습니다. 최소 80자 이상 필요합니다.")
     elif not st.session_state.pkg_author_name.strip():
         st.warning("작가 이름을 입력해 주세요.")
+    elif not email_valid:
+        st.warning("올바른 이메일을 입력해 주세요.")
+    elif not limit_ok:
+        st.error(limit_msg)
+        # 차단된 경우에도 T2 결제 CTA 노출
+        st.markdown(
+            """
+<div style="text-align:center; margin-top:12px;">
+  <a href="https://expert-workbook.vercel.app/payment?plan=t2_standard" target="_blank"
+     style="
+       display:inline-block;
+       padding: 12px 28px;
+       background: linear-gradient(135deg, #D4AF37 0%, #F3D992 50%, #D4AF37 100%);
+       color:#000;
+       font-weight:900;
+       border-radius:10px;
+       text-decoration:none;
+       font-size:15px;
+     ">
+    💳 T2 30일 코칭 바로 시작하기 (29만원) →
+  </a>
+</div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 # ─── 생성 버튼 ─────────────────────────────
 st.markdown("### 3단계. AI가 한번에 생성")
@@ -199,6 +343,11 @@ if st.button(
 
             placeholder.markdown(full_text)
             st.session_state.pkg_result = full_text
+            # 사용 기록 저장 (남용 방지)
+            _record_usage(
+                st.session_state.pkg_author_email,
+                st.session_state.pkg_author_name,
+            )
             st.success(f"✅ 생성 완료 · 총 {len(full_text):,}자")
 
         except anthropic.APIError as e:
