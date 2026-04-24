@@ -21,18 +21,22 @@ import anthropic
 
 from config import ANTHROPIC_API_KEY, MODEL_NAME, MAX_TOKENS_LONG
 from coaching.file_reader import extract_text, is_supported, SUPPORTED_EXTS
+from coaching.context_manager import _get_spreadsheet, _get_or_create_worksheet
 
 # ─── 남용 방지 설정 ──────────────────────────
-# 같은 이메일로 N회 이상 생성하면 차단
-# 기록 파일: ./data/vibe_draft_usage.jsonl (streamlit cloud 재시작 시 초기화됨)
+# Google Sheets에 영속 저장 — 컨테이너 재시작에도 기록 유지
+# 실패 시 ./data/*.jsonl 로 폴백 (둘 중 하나라도 있으면 차단 작동)
 USAGE_LIMIT_PER_EMAIL = 2         # 이메일당 총 허용 횟수 (평생)
 USAGE_LIMIT_PER_DAY = 1            # 이메일당 하루 허용 횟수
 USAGE_COOLDOWN_HOURS = 24          # 쿨다운 시간
 ADMIN_BYPASS_EMAIL_SUFFIX = "@booksmith.kr"  # 대표님 이메일은 무제한
 
+USAGE_SHEET_TITLE = "바이브_5꼭지_사용기록"
+USAGE_SHEET_HEADERS = ["email", "email_normalized", "name", "at", "source"]
+
 DATA_DIR = Path("./data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
-USAGE_LOG_FILE = DATA_DIR / "vibe_draft_usage.jsonl"
+USAGE_LOG_FILE = DATA_DIR / "vibe_draft_usage.jsonl"  # 폴백용
 
 
 def _normalize_email(email: str) -> str:
@@ -47,8 +51,41 @@ def _normalize_email(email: str) -> str:
     return f"{local}@{domain}"
 
 
+@st.cache_resource(ttl=60)
+def _get_usage_worksheet():
+    """사용 기록 시트 워크시트 (60초 캐시)."""
+    try:
+        ss = _get_spreadsheet()
+        if ss is None:
+            return None
+        return _get_or_create_worksheet(ss, USAGE_SHEET_TITLE, USAGE_SHEET_HEADERS)
+    except Exception:
+        return None
+
+
 def _load_usage_records() -> list[dict]:
-    """사용 기록 전체 로드."""
+    """
+    사용 기록 전체 로드.
+    1순위: Google Sheets (영구)
+    2순위: 로컬 JSONL 파일 (시트 미연결 시 폴백)
+    """
+    # 1) Google Sheets
+    ws = _get_usage_worksheet()
+    if ws is not None:
+        try:
+            rows = ws.get_all_records()  # [{header: value}, ...]
+            return [
+                {
+                    "email": r.get("email_normalized") or _normalize_email(r.get("email", "")),
+                    "name": r.get("name", ""),
+                    "at": r.get("at", ""),
+                }
+                for r in rows
+            ]
+        except Exception:
+            pass  # 폴백으로 떨어짐
+
+    # 2) 파일 폴백
     if not USAGE_LOG_FILE.exists():
         return []
     records = []
@@ -68,16 +105,35 @@ def _load_usage_records() -> list[dict]:
 
 
 def _record_usage(email: str, name: str) -> None:
-    """사용 기록 한 줄 추가 (JSONL)."""
+    """
+    사용 기록 저장 — Google Sheets 우선, 실패 시 파일.
+    둘 다 시도 (이중 저장으로 안전성 확보).
+    """
+    norm = _normalize_email(email)
+    ts = datetime.now().isoformat()
+    row = [email.strip(), norm, name, ts, "streamlit_5chapters"]
+
+    # Google Sheets 기록
+    ws = _get_usage_worksheet()
+    if ws is not None:
+        try:
+            ws.append_row(row, value_input_option="USER_ENTERED")
+        except Exception:
+            pass
+
+    # 파일에도 백업
     try:
         with USAGE_LOG_FILE.open("a", encoding="utf-8") as f:
             f.write(json.dumps({
-                "email": _normalize_email(email),
+                "email": norm,
                 "name": name,
-                "at": datetime.now().isoformat(),
+                "at": ts,
             }, ensure_ascii=False) + "\n")
     except Exception:
         pass
+
+    # 캐시 무효화 (다음 조회에서 신규 데이터 반영)
+    _get_usage_worksheet.clear()
 
 
 def _check_usage_limit(email: str) -> tuple[bool, str]:
@@ -115,7 +171,7 @@ def _check_usage_limit(email: str) -> tuple[bool, str]:
             remaining = USAGE_COOLDOWN_HOURS - int((now - at).total_seconds() / 3600)
             return False, (
                 f"⏱ 같은 이메일은 **{USAGE_COOLDOWN_HOURS}시간에 {USAGE_LIMIT_PER_DAY}회**만 사용 가능합니다. "
-                f"약 **{remaining}시간 후** 다시 이용하실 수 있습니다.\n\n"
+                f"약 **{max(remaining, 1)}시간 후** 다시 이용하실 수 있습니다.\n\n"
                 f"기다리지 않고 바로 시작하시려면 **T2 30일 코칭**으로 진행해 주세요."
             )
 
