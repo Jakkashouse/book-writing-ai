@@ -57,6 +57,44 @@ if css_file.exists():
 init_session_state()
 init_submission_state()
 
+# ═══════════════════════════════════════════════
+# 운영자 전용 비밀번호 게이트 (초고쓰기)
+# 투고하기(pages/1_투고하기.py)는 공개, 초고쓰기는 운영자만
+# 시크릿: ADMIN_PASSWORD (투고현황과 공용)
+# ═══════════════════════════════════════════════
+try:
+    _admin_password = st.secrets.get("ADMIN_PASSWORD", "")
+except Exception:
+    _admin_password = ""
+
+if not st.session_state.get("coach_authed"):
+    st.title(f"{APP_ICON} {APP_TITLE}")
+    st.caption("운영자 전용 영역 | 작가의집 출판사")
+
+    st.info(
+        "**초고쓰기**는 작가의집 운영자 전용 기능입니다.\n\n"
+        "원고를 보내주실 작가님은 좌측 메뉴의 **📮 투고하기** 페이지를 이용해 주세요."
+    )
+
+    if not _admin_password:
+        st.error(
+            "⚠️ ADMIN_PASSWORD가 Secrets에 설정되지 않았습니다.\n\n"
+            "Streamlit Cloud → Settings → Secrets에 아래 줄을 추가하세요:\n\n"
+            '`ADMIN_PASSWORD = "원하는_비밀번호"`'
+        )
+        st.stop()
+
+    pwd = st.text_input("운영자 비밀번호", type="password", key="coach_pwd_input")
+    col_a, _ = st.columns([1, 5])
+    with col_a:
+        if st.button("로그인", type="primary", key="coach_login_btn"):
+            if pwd == _admin_password:
+                st.session_state["coach_authed"] = True
+                st.rerun()
+            else:
+                st.error("비밀번호가 일치하지 않습니다.")
+    st.stop()
+
 # ─── 사이드바 ────────────────────────────────
 render_sidebar()
 
