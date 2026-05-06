@@ -82,6 +82,12 @@ PUBLISHING_ROUTES = {
 DATA_DIR = "data"
 SAVE_FILENAME = "session_data.json"
 
+# 작가 글 영구 저장용 구글시트 탭 이름
+# - COACHING_META_SHEET: 작가 이메일 1 row, 매 저장 시 upsert
+# - COACHING_MESSAGES_SHEET: 메시지 1줄 = 1 row, append-only (셀 5만자 한계 회피)
+COACHING_META_SHEET = "코칭_세션메타"
+COACHING_MESSAGES_SHEET = "코칭_메시지"
+
 # ─── 버전 ────────────────────────────────────
 APP_VERSION = "2.2.0"
 

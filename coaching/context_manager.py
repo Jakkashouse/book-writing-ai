@@ -8,7 +8,10 @@ import json
 import streamlit as st
 from pathlib import Path
 from datetime import datetime
-from config import TOTAL_PHASES, DATA_DIR, SAVE_FILENAME, MILESTONES, GSHEET_URL
+from config import (
+    TOTAL_PHASES, DATA_DIR, SAVE_FILENAME, MILESTONES, GSHEET_URL,
+    COACHING_META_SHEET, COACHING_MESSAGES_SHEET,
+)
 
 # Phase별 진행률 가중치
 # 1단계(발견/제목) 완료 = 40%, 2단계(구조화/목차) 완료 = 80%
@@ -37,6 +40,7 @@ def init_session_state():
         "total_user_messages": 0,
         "action_pending": None,
         "session_start": datetime.now().isoformat(),
+        "author_email": "",
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -44,22 +48,35 @@ def init_session_state():
 
 
 def add_message(role: str, content: str):
-    """메시지 추가 + 자동 저장"""
-    st.session_state.messages.append({
+    """메시지 추가 + 자동 저장 (구글시트 1순위, 로컬 파일 2순위)"""
+    msg = {
         "role": role,
         "content": content,
         "phase": st.session_state.current_phase,
         "timestamp": datetime.now().isoformat(),
-    })
+    }
+    st.session_state.messages.append(msg)
     if role == "user":
         st.session_state.total_user_messages += 1
         _check_message_milestones()
 
-    # 자동 저장 (매 메시지마다)
-    try:
-        save_session_to_file()
-    except Exception:
-        pass  # 저장 실패해도 대화는 계속
+    # 자동 저장: 작가 이메일이 있으면 구글시트 영구 저장
+    # - 시트 저장은 컨테이너 재시작/재배포에도 살아남는 유일한 경로
+    # - 실패하면 로컬 파일로 폴백 (그래도 재배포 시 날아감 — 경고용)
+    saved_to_sheet = False
+    if st.session_state.get("author_email"):
+        try:
+            _append_message_row(msg)
+            _upsert_session_meta()
+            saved_to_sheet = True
+        except Exception:
+            pass
+
+    if not saved_to_sheet:
+        try:
+            save_session_to_file()
+        except Exception:
+            pass
 
 
 def get_api_messages() -> list:
@@ -813,3 +830,205 @@ def _send_author_reply_email(payload: dict, analysis: dict) -> bool:
         return True
     except Exception:
         return False
+
+
+# ══════════════════════════════════════════════════
+# 작가 글 영구 저장 (구글시트)
+# - Streamlit Cloud는 디스크가 휘발성이라 로컬 JSON 저장이 무용지물
+# - 대신 GSHEET에 메시지 append + 세션 메타 upsert
+# - 작가 식별은 이메일 (사이드바에서 입력)
+# ══════════════════════════════════════════════════
+
+COACHING_META_HEADERS = [
+    "이메일", "최초시작", "마지막업데이트",
+    "현재phase", "현재step", "phase_completed",
+    "user_data", "outputs", "milestones", "total_user_messages",
+    "메시지수",
+]
+
+COACHING_MESSAGE_HEADERS = [
+    "시각", "이메일", "role", "phase", "content",
+]
+
+
+def _serialize(obj) -> str:
+    try:
+        return json.dumps(obj, ensure_ascii=False)
+    except Exception:
+        return ""
+
+
+def _deserialize(s: str, default):
+    if not s:
+        return default
+    try:
+        return json.loads(s)
+    except Exception:
+        return default
+
+
+def _append_message_row(msg: dict):
+    """메시지 1줄을 '코칭_메시지' 탭에 append."""
+    spreadsheet = _get_spreadsheet()
+    if spreadsheet is None:
+        raise RuntimeError("spreadsheet not available")
+
+    ws = _get_or_create_worksheet(
+        spreadsheet, COACHING_MESSAGES_SHEET, COACHING_MESSAGE_HEADERS,
+    )
+    # 셀 5만자 한계 회피용 단순 절단 (실제로 한 메시지가 5만자 넘는 경우는 거의 없음)
+    content = (msg.get("content") or "")[:49000]
+    ws.append_row(
+        [
+            msg.get("timestamp", datetime.now().isoformat()),
+            st.session_state.get("author_email", ""),
+            msg.get("role", ""),
+            msg.get("phase", st.session_state.current_phase),
+            content,
+        ],
+        value_input_option="USER_ENTERED",
+    )
+
+
+def _upsert_session_meta():
+    """작가 이메일 기준으로 메타 row를 갱신(없으면 새로 추가)."""
+    spreadsheet = _get_spreadsheet()
+    if spreadsheet is None:
+        raise RuntimeError("spreadsheet not available")
+
+    ws = _get_or_create_worksheet(
+        spreadsheet, COACHING_META_SHEET, COACHING_META_HEADERS,
+    )
+
+    email = st.session_state.get("author_email", "").strip().lower()
+    if not email:
+        return
+
+    now = datetime.now().isoformat()
+    started = st.session_state.get("session_start", now)
+
+    row = [
+        email,
+        started,
+        now,
+        st.session_state.current_phase,
+        st.session_state.current_step,
+        _serialize({str(k): v for k, v in st.session_state.phase_completed.items()}),
+        _serialize(st.session_state.user_data),
+        _serialize({str(k): v for k, v in st.session_state.outputs.items()}),
+        _serialize(st.session_state.milestones_achieved),
+        st.session_state.total_user_messages,
+        len(st.session_state.messages),
+    ]
+
+    # 1열(이메일)에서 기존 row 찾기
+    try:
+        cell = ws.find(email, in_column=1)
+    except Exception:
+        cell = None
+
+    end_col = _col_letter(len(COACHING_META_HEADERS))
+    if cell:
+        ws.update(
+            f"A{cell.row}:{end_col}{cell.row}", [row], value_input_option="USER_ENTERED",
+        )
+    else:
+        ws.append_row(row, value_input_option="USER_ENTERED")
+
+
+def load_session_from_gsheet(email: str) -> bool:
+    """이메일로 시트에서 세션을 복원. 성공 시 True."""
+    email = (email or "").strip().lower()
+    if not email:
+        return False
+
+    spreadsheet = _get_spreadsheet()
+    if spreadsheet is None:
+        return False
+
+    # 1) 메타 가져오기
+    try:
+        ws_meta = _get_or_create_worksheet(
+            spreadsheet, COACHING_META_SHEET, COACHING_META_HEADERS,
+        )
+        cell = ws_meta.find(email, in_column=1)
+        if not cell:
+            return False
+        meta_row = ws_meta.row_values(cell.row)
+    except Exception:
+        return False
+
+    # 헤더 인덱스 (확장 대비 안전 매핑)
+    headers = COACHING_META_HEADERS
+    def _get(col):
+        try:
+            i = headers.index(col)
+            return meta_row[i] if i < len(meta_row) else ""
+        except ValueError:
+            return ""
+
+    try:
+        st.session_state.current_phase = int(_get("현재phase") or 1)
+        st.session_state.current_step = int(_get("현재step") or 0)
+    except Exception:
+        st.session_state.current_phase = 1
+        st.session_state.current_step = 0
+
+    pc = _deserialize(_get("phase_completed"), {})
+    st.session_state.phase_completed = {
+        int(k): bool(v) for k, v in pc.items()
+    }
+    # 누락된 phase는 False로 채움
+    for i in range(1, TOTAL_PHASES + 1):
+        st.session_state.phase_completed.setdefault(i, False)
+
+    st.session_state.user_data = _deserialize(_get("user_data"), {})
+    out = _deserialize(_get("outputs"), {})
+    st.session_state.outputs = {int(k): v for k, v in out.items()}
+    st.session_state.milestones_achieved = _deserialize(_get("milestones"), [])
+    try:
+        st.session_state.total_user_messages = int(_get("total_user_messages") or 0)
+    except Exception:
+        st.session_state.total_user_messages = 0
+    st.session_state.session_start = _get("최초시작") or datetime.now().isoformat()
+
+    # 2) 메시지 가져오기 (해당 이메일만)
+    try:
+        ws_msg = _get_or_create_worksheet(
+            spreadsheet, COACHING_MESSAGES_SHEET, COACHING_MESSAGE_HEADERS,
+        )
+        all_rows = ws_msg.get_all_values()
+    except Exception:
+        all_rows = []
+
+    messages = []
+    if len(all_rows) >= 2:
+        msg_headers = all_rows[0]
+        try:
+            i_time = msg_headers.index("시각")
+            i_email = msg_headers.index("이메일")
+            i_role = msg_headers.index("role")
+            i_phase = msg_headers.index("phase")
+            i_content = msg_headers.index("content")
+        except ValueError:
+            i_time, i_email, i_role, i_phase, i_content = 0, 1, 2, 3, 4
+
+        for r in all_rows[1:]:
+            if len(r) <= i_email:
+                continue
+            if (r[i_email] or "").strip().lower() != email:
+                continue
+            try:
+                phase_val = int(r[i_phase]) if i_phase < len(r) and r[i_phase] else 1
+            except Exception:
+                phase_val = 1
+            messages.append({
+                "timestamp": r[i_time] if i_time < len(r) else "",
+                "role": r[i_role] if i_role < len(r) else "",
+                "phase": phase_val,
+                "content": r[i_content] if i_content < len(r) else "",
+            })
+
+    st.session_state.messages = messages
+    st.session_state.initialized = True
+    return True

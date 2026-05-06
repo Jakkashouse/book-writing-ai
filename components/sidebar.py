@@ -9,6 +9,7 @@ from coaching.context_manager import (
     get_progress_percentage, get_stats, reset_session,
     save_session_to_file, load_session_from_file,
     init_submission_state, enter_submission_mode, exit_submission_mode,
+    load_session_from_gsheet, _upsert_session_meta,
 )
 
 
@@ -31,6 +32,52 @@ def render_sidebar():
             'AI 책쓰기 코치</p>',
             unsafe_allow_html=True,
         )
+
+        st.divider()
+
+        # ─── 작가 식별 (영구 저장 ON) ─────────
+        # 이메일이 있어야 글이 구글시트에 저장되어 재배포 후에도 살아남음
+        email_input = st.text_input(
+            "✍️ 작가 이메일 (자동 저장 ON)",
+            value=st.session_state.get("author_email", ""),
+            placeholder="이메일을 입력하면 글이 영구 저장됩니다",
+            key="author_email_input",
+            help="이메일이 있어야 작성한 글이 구글시트에 자동 저장됩니다. "
+                 "비워두면 화면을 닫는 순간 모두 사라집니다.",
+        )
+        normalized = (email_input or "").strip().lower()
+        if normalized != st.session_state.get("author_email", ""):
+            st.session_state.author_email = normalized
+
+        if not st.session_state.get("author_email"):
+            st.warning("⚠️ 이메일을 입력하지 않으면 글이 저장되지 않습니다.")
+        else:
+            col_load, col_save = st.columns(2)
+            with col_load:
+                if st.button(
+                    "📂 이전 글 이어쓰기",
+                    use_container_width=True,
+                    key="load_from_sheet_btn",
+                    help="같은 이메일로 저장된 글이 있으면 불러옵니다",
+                ):
+                    if load_session_from_gsheet(st.session_state.author_email):
+                        st.toast("이전 글을 불러왔습니다!", icon="📂")
+                        st.rerun()
+                    else:
+                        st.toast("저장된 글이 없습니다.", icon="⚠️")
+            with col_save:
+                if st.button(
+                    "💾 지금 저장",
+                    use_container_width=True,
+                    key="save_to_sheet_btn",
+                    help="현재까지 글을 구글시트에 저장합니다",
+                ):
+                    try:
+                        _upsert_session_meta()
+                        st.toast("저장 완료!", icon="✅")
+                    except Exception as e:
+                        st.error(f"저장 실패: {e}")
+            st.caption("ℹ️ 메시지를 보낼 때마다 자동으로 저장됩니다.")
 
         st.divider()
 
