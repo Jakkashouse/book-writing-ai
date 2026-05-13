@@ -32,10 +32,19 @@ def render_sidebar():
             'AI 책쓰기 코치</p>',
             unsafe_allow_html=True,
         )
+        # 운영자 모드 뱃지
+        st.markdown(
+            '<div style="text-align:center; margin-top:6px;">'
+            '<span style="display:inline-block; padding:2px 10px; background:rgba(212,175,55,0.18); '
+            'color:#7a5d0c; border-radius:12px; font-size:11px; letter-spacing:0.15em; font-weight:700;">'
+            '🔒 STAFF MODE</span></div>',
+            unsafe_allow_html=True,
+        )
 
         st.divider()
 
-        # ─── 작가 식별 (영구 저장 ON) ─────────
+        # ─── ✍️ 작가 식별 (영구 저장 ON) ─────────
+        st.markdown("**✍️ 작가 식별**")
         # 이메일이 있어야 글이 구글시트에 저장되어 재배포 후에도 살아남음
         email_input = st.text_input(
             "✍️ 작가 이메일 (자동 저장 ON)",
@@ -80,6 +89,9 @@ def render_sidebar():
             st.caption("ℹ️ 메시지를 보낼 때마다 자동으로 저장됩니다.")
 
         st.divider()
+
+        # ─── 🚦 진행 현황 ──────────────────────
+        st.markdown("**🚦 진행 현황**")
 
         # ─── 현재 단계 하이라이트 카드 ─────────
         current_phase = st.session_state.current_phase
@@ -222,6 +234,15 @@ def render_sidebar():
                 for key in milestones:
                     info = MILESTONES.get(key, {})
                     st.caption(f"{info.get('icon', '🏆')} {info.get('label', key)}")
+
+        # ─── 🛠️ 운영자 도구 ────────────────────
+        st.divider()
+        st.markdown("**🛠️ 운영자 도구**")
+        st.caption(
+            "📊 [5꼭지 자동화 로그](/운영_5꼭지로그) · "
+            "📮 [투고현황](/투고현황) · "
+            "📋 [설문지로 바로 시작](/설문지로바로시작)"
+        )
 
         # ─── 세션 관리 ────────────────────────
         st.subheader("세션 관리")

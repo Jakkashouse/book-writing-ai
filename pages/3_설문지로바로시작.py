@@ -11,6 +11,8 @@
 """
 from __future__ import annotations
 
+import base64
+import html as _html
 import json
 import re
 from datetime import datetime, timedelta
@@ -39,10 +41,18 @@ RESULT_SHEET_TITLE = "바이브_5꼭지_결과"
 RESULT_SHEET_HEADERS = ["email_normalized", "name", "at", "source", "char_count", "result"]
 RESULT_CELL_LIMIT = 49000  # GSheet 셀당 5만자 한계 안전 마진
 
+# 이메일 발송 로그
+EMAIL_LOG_SHEET_TITLE = "바이브_5꼭지_이메일발송"
+EMAIL_LOG_HEADERS = ["email_normalized", "name", "at", "status", "provider_id", "error", "char_count"]
+
+# Resend 기본 발신지 (secrets에서 override 가능)
+DEFAULT_FROM_EMAIL = "작가의집 <noreply@booksmith.kr>"
+
 DATA_DIR = Path("./data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 USAGE_LOG_FILE = DATA_DIR / "vibe_draft_usage.jsonl"  # 폴백용
 RESULT_LOG_FILE = DATA_DIR / "vibe_draft_results.jsonl"  # 결과 폴백
+EMAIL_LOG_FILE = DATA_DIR / "vibe_email_log.jsonl"  # 이메일 발송 폴백
 
 
 def _normalize_email(email: str) -> str:
@@ -79,6 +89,165 @@ def _get_result_worksheet():
         return _get_or_create_worksheet(ss, RESULT_SHEET_TITLE, RESULT_SHEET_HEADERS)
     except Exception:
         return None
+
+
+@st.cache_resource(ttl=60)
+def _get_email_log_worksheet():
+    """이메일 발송 로그 시트 (60초 캐시)."""
+    try:
+        ss = _get_spreadsheet()
+        if ss is None:
+            return None
+        return _get_or_create_worksheet(ss, EMAIL_LOG_SHEET_TITLE, EMAIL_LOG_HEADERS)
+    except Exception:
+        return None
+
+
+def _send_result_email(to_email: str, name: str, result_text: str) -> dict:
+    """
+    Resend로 작가에게 5꼭지 결과 발송.
+    본문: 짧은 인사 + 안내 + 첨부 안내 + T2 CTA.
+    첨부: 풀버전 .md 파일 (전체 5꼭지 원문).
+
+    Returns:
+        {"success": bool, "id": str, "error": str}
+    """
+    try:
+        api_key = st.secrets.get("RESEND_API_KEY", "")
+    except Exception:
+        api_key = ""
+    if not api_key:
+        return {"success": False, "id": "", "error": "RESEND_API_KEY 미설정 — secrets.toml에 추가 필요"}
+
+    try:
+        from_addr = st.secrets.get("RESEND_FROM", DEFAULT_FROM_EMAIL)
+    except Exception:
+        from_addr = DEFAULT_FROM_EMAIL
+
+    safe_name = _html.escape(name or "작가")
+    char_count = len(result_text)
+
+    # 본문 HTML — 결과 자체는 너무 길어서 첨부에만 풀버전 보내고, 본문엔 안내만
+    html_body = f"""<!doctype html>
+<html lang="ko">
+<body style="font-family: -apple-system, 'Noto Serif KR', serif; line-height:1.7; color:#222; max-width:680px; margin:0 auto; padding:24px; background:#FAF6EE;">
+  <div style="background:linear-gradient(135deg,#2D5016,#1a3009); color:#fff; padding:28px 24px; border-radius:14px; text-align:center;">
+    <p style="color:#D4AF37; font-size:11px; letter-spacing:0.3em; text-transform:uppercase; margin:0;">JAKKASHOUSE · AI COACH</p>
+    <h1 style="color:#fff; margin:12px 0 6px 0; font-size:24px;">{safe_name} 작가님의 5꼭지가 도착했습니다</h1>
+    <p style="color:rgba(255,255,255,0.78); font-size:14px; margin:0;">총 {char_count:,}자 · 첨부 .md 파일로 보내드립니다</p>
+  </div>
+
+  <div style="padding:20px 4px; line-height:1.8; font-size:15px;">
+    <p>안녕하세요, 작가의집 출판사입니다.</p>
+    <p>방금 작성하신 설문을 바탕으로, 황준연 대표의 AI 코치가 <b>제목 3안 + 40꼭지 목차 + 프롤로그 + 꼭지 1~4편</b>을 한 번에 써드렸습니다.</p>
+    <p><b>첨부된 .md 파일</b>을 메모장·노션·구글닥스에 붙여 넣어 보시거나, 같은 이메일로 <a href="https://jakkashouse-book-writing-ai-app-hiz0fb.streamlit.app/설문지로바로시작" style="color:#2D5016;">설문지로 바로 시작 페이지</a>에 다시 들어오시면 [이전 결과 다시 보기]로 언제든 열어보실 수 있습니다.</p>
+  </div>
+
+  <div style="background:#fff; border:2px solid #D4AF37; border-radius:14px; padding:22px; text-align:center; margin:20px 0;">
+    <p style="color:#D4AF37; font-size:11px; letter-spacing:0.25em; margin:0 0 8px 0;">NEXT STEP</p>
+    <h2 style="color:#2D5016; margin:0 0 6px 0; font-size:20px;">나머지 36꼭지는 T2 30일 코칭에서</h2>
+    <p style="color:#555; font-size:13px; margin:0 0 14px 0;">매일 한 꼭지 피드백 · 5꼭지 자동 흡수 · 30일에 책 한 권</p>
+    <a href="https://expert-workbook.vercel.app/payment?plan=t2_standard"
+       style="display:inline-block; padding:12px 26px; background:linear-gradient(135deg,#D4AF37 0%,#F3D992 50%,#D4AF37 100%); color:#000; font-weight:bold; border-radius:10px; text-decoration:none; font-size:15px;">
+      💳 T2 30일 코칭 시작하기 (29만원) →
+    </a>
+  </div>
+
+  <p style="color:#888; font-size:12px; text-align:center; margin-top:24px;">
+    작가의집 출판사 · 황준연 대표 · 제주<br/>
+    이 메일은 설문 결과 발송용으로 자동 발송되었습니다.
+  </p>
+</body>
+</html>"""
+
+    # 첨부: 풀버전 마크다운
+    md_bytes = result_text.encode("utf-8")
+    md_b64 = base64.b64encode(md_bytes).decode("ascii")
+    safe_filename = re.sub(r"[^\w가-힣\-_.]", "", (name or "작가"))[:40] + "_5꼭지.md"
+
+    payload = {
+        "from": from_addr,
+        "to": [to_email.strip()],
+        "subject": f"📖 {name} 작가님 5꼭지 (제목·목차·프롤로그·꼭지 1~4) - 작가의집",
+        "html": html_body,
+        "attachments": [
+            {
+                "filename": safe_filename,
+                "content": md_b64,
+            }
+        ],
+    }
+
+    # resend 패키지 우선, 실패 시 requests로 폴백
+    try:
+        import resend as _resend
+        _resend.api_key = api_key
+        sent = _resend.Emails.send(payload)
+        msg_id = ""
+        if isinstance(sent, dict):
+            msg_id = sent.get("id", "") or sent.get("data", {}).get("id", "")
+        return {"success": True, "id": msg_id, "error": ""}
+    except Exception as e_sdk:
+        try:
+            import requests as _req
+            resp = _req.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=30,
+            )
+            if resp.status_code in (200, 201, 202):
+                data = resp.json() if resp.content else {}
+                return {"success": True, "id": data.get("id", ""), "error": ""}
+            return {
+                "success": False,
+                "id": "",
+                "error": f"HTTP {resp.status_code}: {resp.text[:200]}",
+            }
+        except Exception as e_http:
+            return {
+                "success": False,
+                "id": "",
+                "error": f"SDK/HTTP 모두 실패: {e_sdk} | {e_http}",
+            }
+
+
+def _log_email_send(to_email: str, name: str, send_result: dict, char_count: int) -> None:
+    """이메일 발송 결과를 시트 + 파일에 이중 기록."""
+    norm = _normalize_email(to_email)
+    ts = datetime.now().isoformat()
+    row = [
+        norm,
+        name,
+        ts,
+        "success" if send_result.get("success") else "fail",
+        send_result.get("id", ""),
+        (send_result.get("error", "") or "")[:200],
+        str(char_count),
+    ]
+    ws = _get_email_log_worksheet()
+    if ws is not None:
+        try:
+            ws.append_row(row, value_input_option="USER_ENTERED")
+        except Exception:
+            pass
+    try:
+        with EMAIL_LOG_FILE.open("a", encoding="utf-8") as f:
+            f.write(json.dumps({
+                "email": norm,
+                "name": name,
+                "at": ts,
+                "status": "success" if send_result.get("success") else "fail",
+                "provider_id": send_result.get("id", ""),
+                "error": send_result.get("error", ""),
+                "char_count": char_count,
+            }, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+    _get_email_log_worksheet.clear()
 
 
 def _save_result(email: str, name: str, result_text: str) -> None:
@@ -594,6 +763,33 @@ if st.button(
                 full_text,
             )
             st.success(f"✅ 생성 완료 · 총 {len(full_text):,}자 · 결과는 같은 이메일로 언제든 다시 보실 수 있습니다.")
+
+            # ─── 이메일 자동 발송 (Resend) ─────────────
+            with st.spinner("📧 작가님 이메일로 결과 발송 중…"):
+                send_result = _send_result_email(
+                    st.session_state.pkg_author_email,
+                    st.session_state.pkg_author_name,
+                    full_text,
+                )
+            _log_email_send(
+                st.session_state.pkg_author_email,
+                st.session_state.pkg_author_name,
+                send_result,
+                len(full_text),
+            )
+            if send_result.get("success"):
+                st.info(
+                    f"📧 **{st.session_state.pkg_author_email}** 으로 결과 .md 파일을 발송했습니다. "
+                    f"이메일이 도착하지 않으면 스팸함을 확인해 주세요."
+                )
+            else:
+                err = send_result.get("error", "")
+                # 작가에게는 차분히, 운영자가 발송 로그 시트에서 원인 추적
+                st.warning(
+                    "📧 이메일 자동 발송에 일시적 문제가 있었습니다. "
+                    "결과는 위에 표시되어 있고, 같은 이메일로 언제든 다시 들어와 확인하실 수 있습니다. "
+                    f"({err[:80] if err else '원인 미상'})"
+                )
 
         except anthropic.APIError as e:
             st.error(f"Claude API 오류: {e}")
