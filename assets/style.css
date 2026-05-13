@@ -421,6 +421,34 @@ div[data-testid="stAlert"]:has(.st-emotion-cache-1gulkj5) {
     }
 }
 
+/* ─── 작가용 진입 페이지 모바일 (≤640px) ───── */
+@media (max-width: 640px) {
+    /* 큰 카드 안 padding 축소 */
+    .author-entry-card,
+    .upsell-card {
+        padding: 22px 18px !important;
+    }
+    .author-entry-card h2,
+    .upsell-card h2 {
+        font-size: 20px !important;
+        line-height: 1.4 !important;
+    }
+    .author-entry-card p,
+    .upsell-card p {
+        font-size: 13px !important;
+    }
+    /* iOS 줌 방지: 입력창 폰트 16px 이상 유지 */
+    [data-testid="stTextArea"] textarea,
+    [data-testid="stTextInput"] input {
+        font-size: 16px !important;
+    }
+    /* 작가 진입용 큰 버튼 폰트는 그대로 두기 */
+    .stButton button[kind="primary"] {
+        font-size: 15px !important;
+        padding: 12px 16px !important;
+    }
+}
+
 /* ─── 사이드바 Expander 배경 수정 ────────────── */
 [data-testid="stSidebar"] details[data-testid="stExpander"] {
     background-color: transparent;

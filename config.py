@@ -89,8 +89,20 @@ COACHING_META_SHEET = "코칭_세션메타"
 COACHING_MESSAGES_SHEET = "코칭_메시지"
 
 # ─── 버전 ────────────────────────────────────
-APP_VERSION = "2.2.0"
+# 2.3.0 (2026-05-13)
+# - 메인 페이지를 작가용 공개 진입으로 전환 (운영자 로그인은 expander로 숨김)
+# - /설문지로바로시작 URL 쿼리 prefill (name/email/survey/source) - expert-workbook 통합
+# - 5꼭지 결과 GSheet 영구 저장 + 같은 이메일 재진입 시 자동 복원
+# - 생성 중 진행 표시기(단계 감지·글자 카운터·진행률 바) + 안내 강화
+# - 모바일 반응형 CSS 확장 (작가 진입 카드 / iOS 줌 방지)
+APP_VERSION = "2.3.0"
 
 # ─── 투고 (원고 업로드 + AI 분석) ──────────────
 # book-coaching-app과 같은 시트 재사용 → 대표 한 곳에서 통합 관리
 GSHEET_URL = "https://docs.google.com/spreadsheets/d/1zo0jZMeWVhjXQ1pCZN2bcdze3DLpE-vmbQPZwp6j7Lg"
+
+# ─── 외부 진입 URL (expert-workbook 등 Vercel 측 통합용) ────
+# expert-workbook /survey 완료 후 자동 이동 시 사용할 베이스 URL
+# 사용 예: f"{STREAMLIT_VIBE_URL}?name={name}&email={email}&source=survey"
+STREAMLIT_VIBE_URL = "https://jakkashouse-book-writing-ai-app-hiz0fb.streamlit.app/설문지로바로시작"
+EXPERT_WORKBOOK_URL = "https://expert-workbook.vercel.app"

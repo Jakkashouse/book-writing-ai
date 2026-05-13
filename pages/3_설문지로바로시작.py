@@ -34,9 +34,15 @@ ADMIN_BYPASS_EMAIL_SUFFIX = "@booksmith.kr"  # 대표님 이메일은 무제한
 USAGE_SHEET_TITLE = "바이브_5꼭지_사용기록"
 USAGE_SHEET_HEADERS = ["email", "email_normalized", "name", "at", "source"]
 
+# 결과 본문 영구 저장 (생성 중단/페이지 새로고침 시에도 손실 X)
+RESULT_SHEET_TITLE = "바이브_5꼭지_결과"
+RESULT_SHEET_HEADERS = ["email_normalized", "name", "at", "source", "char_count", "result"]
+RESULT_CELL_LIMIT = 49000  # GSheet 셀당 5만자 한계 안전 마진
+
 DATA_DIR = Path("./data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 USAGE_LOG_FILE = DATA_DIR / "vibe_draft_usage.jsonl"  # 폴백용
+RESULT_LOG_FILE = DATA_DIR / "vibe_draft_results.jsonl"  # 결과 폴백
 
 
 def _normalize_email(email: str) -> str:
@@ -61,6 +67,102 @@ def _get_usage_worksheet():
         return _get_or_create_worksheet(ss, USAGE_SHEET_TITLE, USAGE_SHEET_HEADERS)
     except Exception:
         return None
+
+
+@st.cache_resource(ttl=60)
+def _get_result_worksheet():
+    """결과 본문 영구 저장 시트 (60초 캐시)."""
+    try:
+        ss = _get_spreadsheet()
+        if ss is None:
+            return None
+        return _get_or_create_worksheet(ss, RESULT_SHEET_TITLE, RESULT_SHEET_HEADERS)
+    except Exception:
+        return None
+
+
+def _save_result(email: str, name: str, result_text: str) -> None:
+    """결과 본문을 시트 + 파일에 이중 저장."""
+    norm = _normalize_email(email)
+    ts = datetime.now().isoformat()
+    char_count = len(result_text)
+    # 셀 한계 안전 마진 — 넘으면 잘림(파일 폴백에는 풀버전 저장)
+    cell_text = result_text if char_count <= RESULT_CELL_LIMIT else result_text[:RESULT_CELL_LIMIT]
+    row = [norm, name, ts, "streamlit_5chapters", str(char_count), cell_text]
+
+    ws = _get_result_worksheet()
+    if ws is not None:
+        try:
+            ws.append_row(row, value_input_option="USER_ENTERED")
+        except Exception:
+            pass
+
+    # 파일 폴백 (시트 실패 대비 풀버전 보존)
+    try:
+        with RESULT_LOG_FILE.open("a", encoding="utf-8") as f:
+            f.write(json.dumps({
+                "email": norm,
+                "name": name,
+                "at": ts,
+                "char_count": char_count,
+                "result": result_text,
+            }, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+    _get_result_worksheet.clear()
+
+
+def _load_latest_result(email: str) -> dict:
+    """같은 이메일의 가장 최근 결과 1건 반환 (없으면 빈 dict)."""
+    if not email or "@" not in email:
+        return {}
+    norm = _normalize_email(email)
+
+    # 1순위: Sheets
+    ws = _get_result_worksheet()
+    if ws is not None:
+        try:
+            rows = ws.get_all_records()
+            mine = [r for r in rows if r.get("email_normalized") == norm]
+            if mine:
+                mine.sort(key=lambda r: r.get("at", ""), reverse=True)
+                latest = mine[0]
+                return {
+                    "at": latest.get("at", ""),
+                    "char_count": int(latest.get("char_count", 0) or 0),
+                    "result": latest.get("result", ""),
+                }
+        except Exception:
+            pass
+
+    # 2순위: 파일 폴백 (풀버전)
+    if not RESULT_LOG_FILE.exists():
+        return {}
+    try:
+        latest = None
+        with RESULT_LOG_FILE.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if rec.get("email") != norm:
+                    continue
+                if latest is None or rec.get("at", "") > latest.get("at", ""):
+                    latest = rec
+        if latest:
+            return {
+                "at": latest.get("at", ""),
+                "char_count": latest.get("char_count", 0),
+                "result": latest.get("result", ""),
+            }
+    except Exception:
+        pass
+    return {}
 
 
 def _load_usage_records() -> list[dict]:
@@ -184,6 +286,14 @@ st.set_page_config(
     layout="centered",
 )
 
+# 공용 CSS 로드 (모바일 반응형 포함)
+_css_file = Path(__file__).resolve().parent.parent / "assets" / "style.css"
+if _css_file.exists():
+    st.markdown(
+        f"<style>{_css_file.read_text(encoding='utf-8')}</style>",
+        unsafe_allow_html=True,
+    )
+
 st.title("📋 설문지로 바로 시작")
 st.caption("설문지 하나면 제목·목차·프롤로그·꼭지 4편까지 **총 5꼭지**를 단번에 생성합니다.")
 
@@ -247,6 +357,34 @@ if "pkg_result" not in st.session_state:
     st.session_state.pkg_result = ""
 if "pkg_generating" not in st.session_state:
     st.session_state.pkg_generating = False
+if "pkg_qp_consumed" not in st.session_state:
+    st.session_state.pkg_qp_consumed = False
+
+# ─── URL 쿼리 파라미터 prefill (expert-workbook 통합용) ──────
+# 사용 예: /설문지로바로시작?name=홍길동&email=hong@example.com&source=survey
+# 또는 짧은 텍스트 설문: &survey=<URL인코딩된 답변 텍스트>
+if not st.session_state.pkg_qp_consumed:
+    import urllib.parse as _urlp
+    _qp = st.query_params
+    _qp_name = _qp.get("name", "")
+    _qp_email = _qp.get("email", "")
+    _qp_survey = _qp.get("survey", "") or _qp.get("survey_text", "")
+    if _qp_name and not st.session_state.pkg_author_name:
+        st.session_state.pkg_author_name = _qp_name.strip()[:50]
+    if _qp_email and not st.session_state.pkg_author_email:
+        st.session_state.pkg_author_email = _qp_email.strip()[:120]
+    if _qp_survey and not st.session_state.pkg_input_text:
+        try:
+            decoded = _urlp.unquote(_qp_survey)
+            if len(decoded) >= 80:
+                st.session_state.pkg_input_text = decoded
+        except Exception:
+            pass
+    st.session_state.pkg_qp_consumed = True
+    # 진입 출처 트래킹용 (선택)
+    _qp_source = _qp.get("source", "")
+    if _qp_source:
+        st.session_state.pkg_source = _qp_source
 
 
 # ─── 입력 영역 ─────────────────────────────
@@ -309,6 +447,25 @@ limit_ok, limit_msg = (True, "")
 if email_valid:
     limit_ok, limit_msg = _check_usage_limit(st.session_state.pkg_author_email)
 
+# ─── 이전 결과 자동 복원 안내 ─────────────
+# 같은 이메일로 결과가 있으면 "다시 보기" 버튼 노출 (생성 중복 차단과 별개)
+_norm_email_now = _normalize_email(st.session_state.pkg_author_email) if email_valid else ""
+if email_valid and not st.session_state.pkg_result:
+    # 이메일 변경 시 캐시 갱신
+    if st.session_state.get("pkg_latest_checked_email") != _norm_email_now:
+        st.session_state.pkg_latest_cache = _load_latest_result(st.session_state.pkg_author_email)
+        st.session_state.pkg_latest_checked_email = _norm_email_now
+    _latest = st.session_state.get("pkg_latest_cache", {}) or {}
+    if _latest.get("result"):
+        _at = _latest.get("at", "")[:16].replace("T", " ")
+        st.success(
+            f"📂 같은 이메일로 저장된 결과가 있습니다 (생성 시각: {_at} · {_latest.get('char_count', 0):,}자). "
+            f"새로 생성하지 않고 이전 결과를 다시 보시려면 아래 버튼을 눌러주세요."
+        )
+        if st.button("📖 이전 결과 다시 보기", key="restore_latest_btn"):
+            st.session_state.pkg_result = _latest.get("result", "")
+            st.rerun()
+
 can_start = (
     bool(st.session_state.pkg_input_text.strip())
     and len(st.session_state.pkg_input_text.strip()) >= 80
@@ -353,6 +510,15 @@ if not can_start:
 # ─── 생성 버튼 ─────────────────────────────
 st.markdown("### 3단계. AI가 한번에 생성")
 
+def _detect_stage(text: str) -> str:
+    """스트리밍 중인 텍스트에서 현재 진행 중인 ### 헤더 단계 감지."""
+    matches = re.findall(r"###\s*(\d+)\.\s*([^\n]+)", text)
+    if not matches:
+        return "분석·구상 중"
+    n, title = matches[-1]
+    return f"{n}. {title.strip()}"
+
+
 if st.button(
     "🚀 제목·목차·프롤로그·꼭지 4편 한번에 받기",
     type="primary",
@@ -381,8 +547,18 @@ if st.button(
 각 꼭지는 반드시 1,500자 이상이어야 하며, 작가님의 설문 답변에서 구체 키워드와 장면을 적극 인용해야 합니다.
 """
 
+        # ─── 진행 안내 패널 ──────────────────────────
+        status_info = st.empty()
+        status_info.info(
+            "⏱ **약 60~90초 소요됩니다.** 생성 중에는 창을 닫거나 새로고침하지 마세요.\n\n"
+            "📑 **생성 순서**: 제목 3안 → 목차 40꼭지 → 프롤로그 → 꼭지 1~4 → 마무리\n\n"
+            "💾 완료된 결과는 자동 저장되어 같은 이메일로 언제든 다시 보실 수 있습니다."
+        )
+        progress_bar = st.progress(0.0, text="준비 중…")
+        char_status = st.empty()
         placeholder = st.empty()
         full_text = ""
+        TARGET_CHARS = 25000  # 5꼭지 평균 목표
 
         try:
             with client.messages.stream(
@@ -393,18 +569,31 @@ if st.button(
             ) as stream:
                 for chunk in stream.text_stream:
                     full_text += chunk
-                    # 2000자마다 화면 갱신 (부하 경감)
+                    # 300자마다 화면 갱신 (부하 경감)
                     if len(full_text) % 300 < len(chunk):
+                        cur_len = len(full_text)
+                        stage = _detect_stage(full_text)
+                        pct = min(cur_len / TARGET_CHARS, 0.98)
+                        progress_bar.progress(pct, text=f"✍️ 단계: {stage} · {cur_len:,}자")
                         placeholder.markdown(full_text + " ▌")
 
             placeholder.markdown(full_text)
+            progress_bar.progress(1.0, text=f"✅ 완료 · {len(full_text):,}자")
+            status_info.empty()
+            char_status.empty()
             st.session_state.pkg_result = full_text
             # 사용 기록 저장 (남용 방지)
             _record_usage(
                 st.session_state.pkg_author_email,
                 st.session_state.pkg_author_name,
             )
-            st.success(f"✅ 생성 완료 · 총 {len(full_text):,}자")
+            # 결과 본문 영구 저장 (중단/새로고침 대비)
+            _save_result(
+                st.session_state.pkg_author_email,
+                st.session_state.pkg_author_name,
+                full_text,
+            )
+            st.success(f"✅ 생성 완료 · 총 {len(full_text):,}자 · 결과는 같은 이메일로 언제든 다시 보실 수 있습니다.")
 
         except anthropic.APIError as e:
             st.error(f"Claude API 오류: {e}")
@@ -441,7 +630,7 @@ if st.session_state.pkg_result and not st.session_state.pkg_generating:
     st.markdown("---")
     st.markdown(
         """
-<div style="
+<div class="upsell-card" style="
     padding: 28px;
     border-radius: 16px;
     background: linear-gradient(135deg, #2D5016 0%, #1a3009 100%);

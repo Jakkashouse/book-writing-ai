@@ -69,30 +69,80 @@ except Exception:
 
 if not st.session_state.get("coach_authed"):
     st.title(f"{APP_ICON} {APP_TITLE}")
-    st.caption("운영자 전용 영역 | 작가의집 출판사")
+    st.caption("작가의집 출판사 · AI 책쓰기 코치")
 
-    st.info(
-        "**초고쓰기**는 작가의집 운영자 전용 기능입니다.\n\n"
-        "원고를 보내주실 작가님은 좌측 메뉴의 **📮 투고하기** 페이지를 이용해 주세요."
+    # ─── 작가용 메인 진입 (공개) ─────────────────────
+    st.markdown(
+        """
+<div class="author-entry-card" style="
+    padding: 32px 28px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #2D5016 0%, #1a3009 100%);
+    color: #F5EFE4;
+    text-align: center;
+    border: 2px solid #D4AF37;
+    margin: 8px 0 20px 0;
+">
+  <div style="color:#D4AF37; font-size:11px; letter-spacing:0.3em; text-transform:uppercase; font-weight:bold;">
+    AUTHOR ENTRY · 작가 진입
+  </div>
+  <h2 style="color:#fff; margin:14px 0 10px 0; font-size:26px; line-height:1.4;">
+    설문지 하나로 <span style="color:#D4AF37;">제목·목차·프롤로그·꼭지 4편</span><br/>
+    총 5꼭지를 단번에
+  </h2>
+  <p style="color:rgba(245,239,228,0.85); font-size:14px; line-height:1.7; margin:10px 0 4px 0;">
+    버셀 /survey 설문 또는 100문답 PDF를 그대로 업로드하시면 됩니다.<br/>
+    Claude가 실시간으로 작가님의 책 첫 25,000자를 써드립니다.
+  </p>
+</div>
+        """,
+        unsafe_allow_html=True,
     )
 
-    if not _admin_password:
-        st.error(
-            "⚠️ ADMIN_PASSWORD가 Secrets에 설정되지 않았습니다.\n\n"
-            "Streamlit Cloud → Settings → Secrets에 아래 줄을 추가하세요:\n\n"
-            '`ADMIN_PASSWORD = "원하는_비밀번호"`'
-        )
-        st.stop()
+    col_left, col_mid, col_right = st.columns([1, 2, 1])
+    with col_mid:
+        if st.button(
+            "📋 설문지로 바로 시작하기 →",
+            type="primary",
+            use_container_width=True,
+            key="public_entry_btn",
+        ):
+            try:
+                st.switch_page("pages/3_설문지로바로시작.py")
+            except Exception:
+                st.markdown(
+                    "[설문지 페이지로 이동 →](/설문지로바로시작)",
+                    unsafe_allow_html=True,
+                )
 
-    pwd = st.text_input("운영자 비밀번호", type="password", key="coach_pwd_input")
-    col_a, _ = st.columns([1, 5])
-    with col_a:
-        if st.button("로그인", type="primary", key="coach_login_btn"):
-            if pwd == _admin_password:
-                st.session_state["coach_authed"] = True
-                st.rerun()
-            else:
-                st.error("비밀번호가 일치하지 않습니다.")
+    st.markdown(
+        """
+<div style="text-align:center; margin-top: 16px; color:#666; font-size:13px;">
+  원고 투고를 원하시는 작가님은 좌측 메뉴의 <b>📮 투고하기</b>를 이용해 주세요.
+</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # ─── 운영자 로그인 (숨김 영역) ─────────────────────
+    st.markdown("---")
+    with st.expander("🔒 운영자 로그인 (작가의집 직원 전용)"):
+        if not _admin_password:
+            st.error(
+                "⚠️ ADMIN_PASSWORD가 Secrets에 설정되지 않았습니다.\n\n"
+                "Streamlit Cloud → Settings → Secrets에 아래 줄을 추가하세요:\n\n"
+                '`ADMIN_PASSWORD = "원하는_비밀번호"`'
+            )
+        else:
+            pwd = st.text_input("운영자 비밀번호", type="password", key="coach_pwd_input")
+            col_a, _ = st.columns([1, 5])
+            with col_a:
+                if st.button("로그인", type="primary", key="coach_login_btn"):
+                    if pwd == _admin_password:
+                        st.session_state["coach_authed"] = True
+                        st.rerun()
+                    else:
+                        st.error("비밀번호가 일치하지 않습니다.")
     st.stop()
 
 # ─── 사이드바 ────────────────────────────────
