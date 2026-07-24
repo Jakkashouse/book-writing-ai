@@ -1,6 +1,6 @@
 ---
 name: press-writer
-description: 신문 송고용 보도자료를 .docx로 자동 생성하는 에이전트입니다. 리드 크레딧 [북트립 이철화 기자] 기본값. /홍보물 명령에서 자동 호출됩니다. 오늘 발견된 Downloads 보도자료 docx 공백(71건) 해결 책임.
+description: 신문 송고용 보도자료를 .docx로 자동 생성하는 에이전트입니다. 리드 크레딧 [북트립 이철화 기자] 기본값. /홍보물 명령에서 자동 호출됩니다.
 model: sonnet
 tools: Read, Write, Bash
 color: red

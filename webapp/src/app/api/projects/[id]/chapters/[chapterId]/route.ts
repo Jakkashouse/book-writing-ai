@@ -4,11 +4,13 @@ import { prisma } from "@/lib/prisma"
 // GET /api/projects/[id]/chapters/[chapterId] - 챕터 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string; chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
   try {
+    const { id, chapterId } = await params
+
     const chapter = await prisma.chapter.findUnique({
-      where: { id: params.chapterId },
+      where: { id: chapterId },
     })
 
     if (!chapter) {
@@ -31,9 +33,10 @@ export async function GET(
 // PUT /api/projects/[id]/chapters/[chapterId] - 챕터 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
   try {
+    const { id, chapterId } = await params
     const body = await request.json()
     const { content, wordCount, status } = body
 
@@ -43,7 +46,7 @@ export async function PUT(
     if (status !== undefined) updateData.status = status
 
     const chapter = await prisma.chapter.update({
-      where: { id: params.chapterId },
+      where: { id: chapterId },
       data: updateData,
     })
 
@@ -60,11 +63,13 @@ export async function PUT(
 // DELETE /api/projects/[id]/chapters/[chapterId] - 챕터 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
   try {
+    const { id, chapterId } = await params
+
     await prisma.chapter.delete({
-      where: { id: params.chapterId },
+      where: { id: chapterId },
     })
 
     return NextResponse.json({ success: true })

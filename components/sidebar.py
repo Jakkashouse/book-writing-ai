@@ -23,7 +23,7 @@ def render_sidebar():
             unsafe_allow_html=True,
         )
         st.markdown(
-            '<h1 style="text-align:center;margin:0;padding:0;">작가의집</h1>',
+            '<h1 style="text-align:center;margin:0;padding:0;">작가의 집</h1>',
             unsafe_allow_html=True,
         )
         st.markdown(
@@ -142,7 +142,7 @@ def render_sidebar():
                     st.download_button(
                         label=f"📥 {i}단계 산출물 다운로드",
                         data=output,
-                        file_name=f"작가의집_{i}단계_{PHASE_NAMES[i]}_산출물.md",
+                        file_name=f"작가의 집_{i}단계_{PHASE_NAMES[i]}_산출물.md",
                         mime="text/markdown",
                         key=f"download_{i}",
                         use_container_width=True,
@@ -199,7 +199,7 @@ def render_sidebar():
             st.download_button(
                 label="📄 전체 대화 내보내기",
                 data=full_export,
-                file_name="작가의집_코칭대화_전체.md",
+                file_name="작가의 집_코칭대화_전체.md",
                 mime="text/markdown",
                 key="export_all",
                 use_container_width=True,
@@ -234,7 +234,7 @@ def render_sidebar():
         st.markdown(
             f'<div class="sidebar-footer">'
             f'<p>Powered by Claude AI</p>'
-            f'<p>작가의집 출판사 · v{APP_VERSION}</p>'
+            f'<p>작가의 집 출판사 · v{APP_VERSION}</p>'
             f'</div>',
             unsafe_allow_html=True,
         )
@@ -242,7 +242,7 @@ def render_sidebar():
 
 def _export_full_conversation() -> str:
     """전체 대화를 마크다운으로 내보내기"""
-    lines = ["# 작가의집 AI 코칭 대화 기록\n"]
+    lines = ["# 작가의 집 AI 코칭 대화 기록\n"]
 
     user_data = st.session_state.user_data
     if user_data.get("book_title"):

@@ -15,7 +15,7 @@ from llm.streaming import stream_submission_analysis
 
 # ─── AI 분석 시스템 프롬프트 ──────────────────
 
-SUBMISSION_ANALYSIS_PROMPT = """당신은 작가의집 출판사의 전문 편집자입니다.
+SUBMISSION_ANALYSIS_PROMPT = """당신은 작가의 집 출판사의 전문 편집자입니다.
 투고된 원고(또는 기획안)를 분석하여 출간 가능성을 평가합니다.
 
 ## 평가 기준 (각 25점, 총 100점)

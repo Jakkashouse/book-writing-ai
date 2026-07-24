@@ -1,6 +1,14 @@
+import type { Metadata } from 'next';
 import Header from '@/components/landing/Header';
 import Footer from '@/components/landing/Footer';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: '가격 안내 — 6주 책쓰기 프로그램 패키지',
+  description:
+    '작가의 집 6주 책쓰기 프로그램 가격·구성·환불 안내. 1년 후 1,200만원 수익으로 회수 가능.',
+  alternates: { canonical: '/pricing' },
+};
 
 const tiers = [
   {

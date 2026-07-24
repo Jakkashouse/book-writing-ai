@@ -7,9 +7,10 @@ const prisma = new PrismaClient();
 // POST /api/prompts/[id]/favorite - 즐겨찾기 추가
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession();
 
     if (!session?.user?.email) {
@@ -36,12 +37,12 @@ export async function POST(
       where: {
         userId_promptId: {
           userId: user.id,
-          promptId: params.id,
+          promptId: id,
         },
       },
       create: {
         userId: user.id,
-        promptId: params.id,
+        promptId: id,
       },
       update: {},
     });
@@ -59,9 +60,10 @@ export async function POST(
 // DELETE /api/prompts/[id]/favorite - 즐겨찾기 제거
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession();
 
     if (!session?.user?.email) {
@@ -88,7 +90,7 @@ export async function DELETE(
       where: {
         userId_promptId: {
           userId: user.id,
-          promptId: params.id,
+          promptId: id,
         },
       },
     });

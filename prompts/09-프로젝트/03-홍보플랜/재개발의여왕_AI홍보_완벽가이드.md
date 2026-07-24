@@ -1,6 +1,6 @@
 # 📚 [재개발의 여왕] AI 홍보 콘텐츠 제작 완벽 가이드
 
-**출판사:** 작가의집
+**출판사:** 작가의 집
 **책:** 재개발의 여왕, 100억 자산가 되다
 **작가:** 김성진
 **출간일:** 2025년 1월 31일
@@ -380,7 +380,7 @@ Page Purpose: Convert browsers to buyers for a real estate investment book
 Book Details:
 - Title: "재개발의 여왕, 100억 자산가 되다"
 - Author: Kim Sung-jin (엠디캠퍼스 대표)
-- Publisher: 작가의집
+- Publisher: 작가의 집
 - Publication: January 31, 2025
 - Genre: Real estate investment (novel format)
 - Price: TBD

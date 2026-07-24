@@ -37,6 +37,10 @@ def init_session_state():
         "total_user_messages": 0,
         "action_pending": None,
         "session_start": datetime.now().isoformat(),
+        # 무료 체험 — 5꼭지 제한 (3단계 집필 카운터)
+        "chapters_drafted": 0,          # 지금까지 생성된 챕터 초안 수
+        "free_chapter_limit": 5,        # 무료 상한
+        "upsell_shown": False,          # 중복 배너 방지
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -116,6 +120,17 @@ def clean_response(response: str) -> str:
 def update_user_data(key: str, value):
     """사용자 데이터 업데이트"""
     st.session_state.user_data[key] = value
+
+
+def increment_chapter_count() -> int:
+    """3단계 집필에서 챕터 초안이 생성될 때마다 호출. 현재 카운트 반환."""
+    st.session_state.chapters_drafted = st.session_state.get("chapters_drafted", 0) + 1
+    return st.session_state.chapters_drafted
+
+
+def chapter_limit_reached() -> bool:
+    """무료 챕터 상한 도달 여부."""
+    return st.session_state.get("chapters_drafted", 0) >= st.session_state.get("free_chapter_limit", 5)
 
 
 def save_output(phase: int, content: str):

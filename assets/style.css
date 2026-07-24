@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   작가의집 AI 책쓰기 코치 - 커스텀 CSS v2.0
+   작가의 집 AI 책쓰기 코치 - 커스텀 CSS v2.0
    브랜드 컬러: #2D5016 (딥그린), #F5F0E8 (웜베이지)
    ═══════════════════════════════════════════════ */
 
@@ -405,6 +405,35 @@ div[data-testid="stAlert"]:has(.st-emotion-cache-1gulkj5) {
     box-shadow: 0 0 0 3px rgba(74, 140, 42, 0.2);
 }
 
+/* ─── 현재 단계 하이라이트 카드 ──────────────── */
+.current-phase-card {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F5F0E8 100%);
+    border: 2px solid #2D5016;
+    border-radius: 14px;
+    padding: 0.8rem 1rem;
+    box-shadow: 0 2px 8px rgba(45, 80, 22, 0.1);
+}
+
+.current-phase-card.done {
+    background: linear-gradient(135deg, #F0F7EC 0%, #E8F5E0 100%);
+    border-color: #4A8C2A;
+}
+
+/* ─── 사이드바 푸터 ──────────────────────────── */
+.sidebar-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #D8D3C8;
+    text-align: center;
+}
+
+.sidebar-footer p {
+    margin: 0;
+    font-size: 0.68rem;
+    color: #AAA !important;
+    line-height: 1.5;
+}
+
 /* ─── 반응형 ──────────────────────────────────── */
 @media (max-width: 768px) {
     [data-testid="stChatMessage"] {
@@ -418,6 +447,9 @@ div[data-testid="stAlert"]:has(.st-emotion-cache-1gulkj5) {
     [data-testid="stChatInput"] textarea {
         border-radius: 16px;
         padding: 12px 16px;
+    }
+    .current-phase-card {
+        padding: 0.6rem 0.8rem;
     }
 }
 

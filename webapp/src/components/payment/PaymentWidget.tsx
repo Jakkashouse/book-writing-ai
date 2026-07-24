@@ -21,28 +21,15 @@ export function PaymentWidget({ plan, customerEmail, customerName }: PaymentWidg
   useEffect(() => {
     async function initializePaymentWidget() {
       try {
-        const tossPayments = await loadTossPaymentWidget()
-
-        // Generate orderId
-        const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-
-        // Create payment widget
-        const paymentWidget = tossPayments.widgets({
-          customerKey: customerEmail,
-        })
+        const paymentWidget = await loadTossPaymentWidget(customerEmail)
 
         paymentWidgetRef.current = paymentWidget
 
         // Render payment methods
-        const paymentMethodsWidget = paymentWidget.renderPaymentMethods(
+        await paymentWidget.renderPaymentMethods(
           '#payment-widget',
-          {
-            value: planInfo.price,
-            currency: 'KRW',
-          }
+          { value: planInfo.price }
         )
-
-        paymentMethodsWidgetRef.current = paymentMethodsWidget
 
         setIsLoading(false)
       } catch (err: any) {

@@ -6,10 +6,11 @@ const prisma = new PrismaClient();
 // GET /api/prompts/category/[category] - 카테고리별 프롬프트 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { category: string } }
+  { params }: { params: Promise<{ category: string }> }
 ) {
   try {
-    const category = params.category.toUpperCase() as PromptCategory;
+    const { category: categoryParam } = await params;
+    const category = categoryParam.toUpperCase() as PromptCategory;
 
     // 카테고리 유효성 검사
     const validCategories = [

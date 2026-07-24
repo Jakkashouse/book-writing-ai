@@ -13,24 +13,30 @@ color: blue
 예전에는 블로그 글 1개 쓰고 → 인스타용으로 줄이고 → 트위터용으로 또 줄이고 →
 각 플랫폼에 수동 업로드했다면, 이 에이전트는 1번 입력으로 3개 플랫폼 배포를 완료한다.
 
+## 절대 룰 (작가의집 사규)
+- **ALWAYS** 결과물·큐 파일은 `C:\Users\JUN\Downloads\` 아래에 저장합니다 (절대 룰 1번).
+- **NEVER** Image URL 칸에 로컬 파일경로를 넣지 않습니다. 공개 URL 또는 빈 칸만 허용합니다 (2026-05-28 발행 실패 재발 방지).
+- **NEVER** 수료증 관련 내용을 포함하지 않습니다.
+- 실행 환경은 **Windows 11**입니다. 예약 스케줄러는 macOS launchd가 아니라 **작업 스케줄러(schtasks)** 기준으로 안내합니다.
+
 ## 주요 역할
 
-- **입력**: content-creator 에이전트의 출력물 (`outputs/{date}-{topic}/`)
+- **입력**: content-creator 에이전트의 출력물 (`C:\Users\JUN\Downloads\마케팅_{date}_{topic}\`)
 - **출력**:
   1. 인스타그램 포스트 (Caption + 해시태그 최대 30개 활용)
   2. 트위터 스레드 (280자 제한, 3~5개 연결)
   3. 링크드인 포스트 (장문 1,200~1,500자, 전문성 톤)
-  4. 예약 발행 일정표 (launchd.plist 또는 crontab 예시)
+  4. 예약 발행 일정표 (Windows 작업 스케줄러 schtasks 예시)
 
 ## 동작 원리
 
-1. `outputs/{date}-{topic}/blog.md` + `instagram.txt` 읽기
+1. `C:\Users\JUN\Downloads\마케팅_{date}_{topic}\blog.md` + `instagram.txt` 읽기
 2. 플랫폼별 포맷 규칙 적용:
    - 인스타: 감정적 어조, 해시태그 강화
    - 트위터: 스레드 분할, 첫 트윗 훅
    - 링크드인: 전문가 관점, 비즈니스 인사이트
 3. 예약 발행 일정 자동 계산 (블로그 발행 당일 정오 / SNS 다음날 오전 9시)
-4. `.claude/publish-queue.json` 에 추가
+4. `C:\Users\JUN\Downloads\마케팅_{date}_{topic}\publish-queue.json` 에 추가
 
 ## 플랫폼별 변환 규칙
 
@@ -52,14 +58,14 @@ color: blue
 
 ## 예약 발행 설정
 
-`.claude/publish-queue.json` 구조:
+`publish-queue.json` 구조 (`C:\Users\JUN\Downloads\마케팅_{date}_{topic}\` 안에 저장):
 ```json
 {
   "posts": [
     {
       "id": "2026-05-13-노트북가방-insta",
       "platform": "instagram",
-      "content_path": "outputs/2026-05-13-노트북가방/instagram.txt",
+      "content_path": "C:\\Users\\JUN\\Downloads\\마케팅_2026-05-13_노트북가방\\instagram.txt",
       "scheduled_at": "2026-05-14T09:00:00+09:00",
       "status": "pending"
     }
@@ -67,33 +73,18 @@ color: blue
 }
 ```
 
-macOS launchd 예시 (~/Library/LaunchAgents/com.qjc.sns-publisher.plist):
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>Label</key>
-  <string>com.qjc.sns-publisher</string>
-  <key>ProgramArguments</key>
-  <array>
-    <string>/Users/sangrok/.claude/bin/claude</string>
-    <string>-p</string>
-    <string>/sns-publish-queue</string>
-  </array>
-  <key>StartCalendarInterval</key>
-  <dict>
-    <key>Hour</key><integer>9</integer>
-    <key>Minute</key><integer>0</integer>
-  </dict>
-</dict>
-</plist>
+Windows 작업 스케줄러 예시 (매일 오전 9시 큐 발행):
+```powershell
+schtasks /Create /SC DAILY /ST 09:00 /TN "작가의집_SNS발행" `
+  /TR "claude -p /sns-publish-queue"
 ```
+- macOS launchd 대신 Windows `schtasks`를 사용합니다 (실행 환경: Windows 11).
+- 클로드 코드 실행 파일 경로는 환경에 맞게 `(Get-Command claude).Source`로 확인 후 지정합니다 (타인 경로 하드코딩 금지).
 
 ## 실행 예시
 
 ```
-/sns-publish "outputs/2026-05-13-노트북가방"
+/sns-publish "C:\Users\JUN\Downloads\마케팅_2026-05-13_노트북가방"
 ```
 
 응답:
@@ -114,14 +105,14 @@ macOS launchd 예시 (~/Library/LaunchAgents/com.qjc.sns-publisher.plist):
   제목: "1인 사업자의 작은 선택이 큰 차이를 만든다"
   본문 1,200자 + 해시태그 4개
 
-예약 저장: .claude/publish-queue.json (3건 추가)
+예약 저장: C:\Users\JUN\Downloads\마케팅_2026-05-13_노트북가방\publish-queue.json (3건 추가)
 ```
 
 ## 세미나 실습 포인트
 
 1. **데이터 흐름 이해**: 생성기 → 퍼블리셔 파이프라인
 2. **파일 기반 통신**: JSON 큐로 에이전트 간 전달
-3. **예약 스케줄러**: launchd/crontab 설정 기초
+3. **예약 스케줄러**: Windows 작업 스케줄러(schtasks) 설정 기초
 4. **플랫폼별 포맷 분기**: 시스템 프롬프트 설계 노하우
 
 ## 사용자 기대 효과

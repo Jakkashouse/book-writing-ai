@@ -12,7 +12,7 @@ interface ProfileContentProps {
   user: {
     id: string;
     email: string;
-    name: string;
+    name: string | null;
     image?: string | null;
     emailVerified: Date | null;
     createdAt: Date;
@@ -26,7 +26,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
 
   // 프로필 정보 상태
   const [profileData, setProfileData] = useState<ProfileUpdateFormData>({
-    name: user.name,
+    name: user.name ?? '',
     image: user.image || undefined,
   });
   const [profileErrors, setProfileErrors] = useState<FormValidationError>({});

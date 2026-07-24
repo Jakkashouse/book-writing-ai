@@ -4,11 +4,13 @@ import { prisma } from "@/lib/prisma"
 // GET /api/projects/[id]/chapters - 챕터 목록 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const chapters = await prisma.chapter.findMany({
-      where: { projectId: params.id },
+      where: { projectId: id },
       orderBy: { order: "asc" },
     })
 
@@ -25,15 +27,16 @@ export async function GET(
 // POST /api/projects/[id]/chapters - 챕터 생성
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
     const { title, order, content } = body
 
     const chapter = await prisma.chapter.create({
       data: {
-        projectId: params.id,
+        projectId: id,
         title,
         order: order || 0,
         content: content || "",

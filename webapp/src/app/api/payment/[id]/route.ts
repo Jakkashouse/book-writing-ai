@@ -4,9 +4,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: paymentId } = await params
     const session = await getServerSession()
 
     if (!session?.user?.email) {
@@ -15,8 +16,6 @@ export async function GET(
         { status: 401 }
       )
     }
-
-    const paymentId = params.id
 
     // Find payment record
     const payment = await prisma.payment.findUnique({

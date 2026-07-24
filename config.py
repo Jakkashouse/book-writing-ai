@@ -1,5 +1,5 @@
 """
-작가의집 책쓰기 코칭 웹앱 - 설정
+작가의 집 책쓰기 코칭 웹앱 - 설정
 """
 import os
 import streamlit as st
@@ -16,7 +16,7 @@ MAX_TOKENS = 2048
 MAX_TOKENS_LONG = 4096  # 산출물 생성 시
 
 # ─── 앱 기본 설정 ─────────────────────────────
-APP_TITLE = "작가의집 AI 책쓰기 코치"
+APP_TITLE = "작가의 집 AI 책쓰기 코치"
 APP_ICON = "📚"
 COACH_AVATAR = "📚"
 USER_AVATAR = "✍️"
@@ -62,13 +62,13 @@ SUBMISSION_URGENCY = {
 
 PUBLISHING_ROUTES = {
     "self": {
-        "name": "자체출판 (작가의집)",
+        "name": "자체출판 (작가의 집)",
         "desc": "제작비 전액 출판사 부담 · 인세 10%",
         "detail": "편집, 디자인, 인쇄, 유통 전부 출판사가 합니다. 작가님은 원고만 완성하시면 됩니다.",
     },
     "external": {
         "name": "외부 출판사 투고",
-        "desc": "작가의집이 투고 전략·기획서 지원",
+        "desc": "작가의 집이 투고 전략·기획서 지원",
         "detail": "출판기획서 작성, 출판사 리스트 제공, 투고 메일 작성까지 도와드립니다.",
     },
     "ebook": {

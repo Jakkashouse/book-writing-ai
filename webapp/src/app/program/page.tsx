@@ -1,6 +1,14 @@
+import type { Metadata } from 'next';
 import Header from '@/components/landing/Header';
 import Footer from '@/components/landing/Footer';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: '6주 책쓰기 프로그램 — 1주차부터 6주차까지',
+  description:
+    '제목·목차·AI 5+5 시스템·기획서·출간 전 마케팅·1인 출판까지. 작가의 집 6주 커리큘럼 전체.',
+  alternates: { canonical: '/program' },
+};
 
 export default function ProgramPage() {
   return (
@@ -388,7 +396,7 @@ export default function ProgramPage() {
             </div>
 
             <div className="bg-white rounded-2xl p-8">
-              <h3 className="text-2xl font-bold text-accent mb-4">작가의집 시스템 (1년 52권)</h3>
+              <h3 className="text-2xl font-bold text-accent mb-4">작가의 집 시스템 (1년 52권)</h3>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-start">
                   <span className="text-success font-black mr-3 text-xl">✓</span>

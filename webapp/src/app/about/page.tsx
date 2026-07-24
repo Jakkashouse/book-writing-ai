@@ -1,7 +1,15 @@
+import type { Metadata } from 'next';
 import Header from '@/components/landing/Header';
 import Footer from '@/components/landing/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
+
+export const metadata: Metadata = {
+  title: 'About — 황준연 대표 · 10년간 52권 출간',
+  description:
+    '10년간 52권을 출간한 황준연 대표가 만든 AI 80% + 나 20% 책쓰기 시스템. 작가의 집 강사·프로그램 소개.',
+  alternates: { canonical: '/about' },
+};
 
 export default function AboutPage() {
   return (

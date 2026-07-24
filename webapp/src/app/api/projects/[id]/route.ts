@@ -4,11 +4,13 @@ import { prisma } from "@/lib/prisma"
 // GET /api/projects/[id] - 프로젝트 상세 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const project = await prisma.bookProject.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         chapters: {
           orderBy: { order: "asc" },
@@ -39,9 +41,10 @@ export async function GET(
 // PATCH /api/projects/[id] - 프로젝트 수정
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
     const { title, description, status, genre, targetAudience, keywords } = body
 
@@ -58,7 +61,7 @@ export async function PATCH(
     }
 
     const project = await prisma.bookProject.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
     })
 
@@ -75,11 +78,13 @@ export async function PATCH(
 // DELETE /api/projects/[id] - 프로젝트 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     await prisma.bookProject.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ success: true })

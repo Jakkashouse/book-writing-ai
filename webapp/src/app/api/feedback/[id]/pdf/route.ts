@@ -3,13 +3,15 @@ import { NextRequest, NextResponse } from "next/server"
 // GET /api/feedback/[id]/pdf - 피드백 PDF 다운로드
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // TODO: 실제 PDF 생성 로직 구현
     // 이 예제에서는 간단한 텍스트 응답만 반환합니다
 
-    const pdfContent = `Feedback Report #${params.id}
+    const { id } = await params
+
+    const pdfContent = `Feedback Report #${id}
 
 This is a placeholder for the PDF content.
 In a real implementation, you would:
@@ -23,7 +25,7 @@ Implementation would require additional dependencies.`
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="feedback-${params.id}.pdf"`,
+        "Content-Disposition": `attachment; filename="feedback-${id}.pdf"`,
       },
     })
   } catch (error) {

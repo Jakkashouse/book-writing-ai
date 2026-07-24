@@ -6,11 +6,13 @@ const prisma = new PrismaClient();
 // GET /api/prompts/[id] - 프롬프트 상세 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const prompt = await prisma.promptTemplate.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -30,7 +32,7 @@ export async function GET(
 
     // 사용 횟수 증가 (조회수)
     await prisma.promptTemplate.update({
-      where: { id: params.id },
+      where: { id },
       data: { usageCount: { increment: 1 } },
     });
 

@@ -1,4 +1,4 @@
-import { loadTossPayments } from '@tosspayments/payment-widget-sdk'
+import { loadPaymentWidget } from '@tosspayments/payment-widget-sdk'
 
 const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || ''
 const secretKey = process.env.TOSS_SECRET_KEY || ''
@@ -96,6 +96,6 @@ export class TossPaymentsAPI {
 
 export const tossPayments = new TossPaymentsAPI(secretKey)
 
-export async function loadTossPaymentWidget() {
-  return await loadTossPayments(clientKey)
+export async function loadTossPaymentWidget(customerKey: string) {
+  return await loadPaymentWidget(clientKey, customerKey)
 }

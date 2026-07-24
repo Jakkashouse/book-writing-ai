@@ -21,6 +21,11 @@ venv/
 
 # Claude Code (local-only, not for team)
 .claude/settings.local.json
+*.bak
+*.bak.*
+
+# Downloads (결과물 저장 폴더 - 저장소에 올리지 않음)
+Downloads/
 
 # Temp / debug
 .tmp_*

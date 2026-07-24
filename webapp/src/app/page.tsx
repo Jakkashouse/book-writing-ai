@@ -1,6 +1,19 @@
+import type { Metadata } from 'next';
 import Header from '@/components/landing/Header';
 import Footer from '@/components/landing/Footer';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: '작가의 집 — 당신의 서사가 마스터피스가 되는 곳',
+  description:
+    '6주 만에 책을 완성하고 출간하는 작가의 집. 출간률 99%, 계약률 100%. 자서전 챌린지·CEO 브랜딩·1인 출판으로 당신의 서사를 마스터피스로.',
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: '작가의 집 — 당신의 서사가 마스터피스가 되는 곳',
+    description: '6주 만에 책 완성, 출간률 99%. 작가의 집의 책쓰기 코칭 프로그램.',
+    url: 'https://expert-workbook.vercel.app/',
+  },
+};
 
 export default function Home() {
   return (
@@ -264,31 +277,6 @@ export default function Home() {
 
       <Footer />
 
-      <style jsx>{`
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fade-in-up {
-          animation: fade-in-up 0.8s ease-out forwards;
-        }
-
-        .animation-delay-200 {
-          animation-delay: 0.2s;
-          opacity: 0;
-        }
-
-        .bg-gradient-radial {
-          background: radial-gradient(circle, currentColor 0%, transparent 50%);
-        }
-      `}</style>
     </div>
   );
 }

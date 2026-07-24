@@ -51,8 +51,10 @@ color: purple
 3. Grep으로 에피소드 후보 추출 ("그날", "어느 날", 시간 표현, 대화 패턴)
 4. 10장 구조에 따라 본문 배치
 5. .md 파일 저장
-6. Bash로 reportlab 호출: `python -m reportlab_cardnews {책제목}` → .pdf 생성
-7. 두 파일 모두 Downloads에 저장 확인
+6. .md를 .pdf로 변환 (둘 중 환경에 맞는 방식 — 설치 상태: reportlab 4.4.7 / pandoc 3.9.0.2 확인됨):
+   - 권장: `pandoc {책제목}_카드뉴스.md -o {책제목}_카드뉴스.pdf`
+   - 또는 reportlab로 슬라이드형 PDF를 직접 그리는 스크립트를 임시 생성해 실행 (존재하지 않는 `reportlab_cardnews` 모듈 호출 금지)
+7. 두 파일(.md/.pdf) 모두 Downloads에 생성됐는지 `ls`로 검증
 
 ## 출력 검증
 
