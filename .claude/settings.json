@@ -1,3 +1,15 @@
 {
-  "enabledPlugins": {}
+  "enabledPlugins": {},
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\JUN\\my-first-project\\book-writing-ai\\.claude\\hooks\\session-start-briefing.ps1\""
+          }
+        ]
+      }
+    ]
+  }
 }

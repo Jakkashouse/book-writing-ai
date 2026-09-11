@@ -1,0 +1,51 @@
+{
+  "name": "작가의집 — Buffer 성과 → Notion 동기화",
+  "description": "매일 자정 Buffer 발행분 성과를 Notion DB에 자동 업데이트 (insight-analyzer가 읽음)",
+  "scenario": {
+    "trigger": {
+      "module": "scheduler:Daily",
+      "name": "1. 매일 00:30 KST 트리거",
+      "schedule": "30 0 * * *"
+    },
+    "steps": [
+      {
+        "order": 2,
+        "module": "buffer:ListSentUpdates",
+        "name": "2. 지난 24시간 발행분 조회",
+        "params": {
+          "profile_ids": ["{{env.BUFFER_PROFILE_INSTAGRAM}}", "{{env.BUFFER_PROFILE_FACEBOOK}}", "{{env.BUFFER_PROFILE_TWITTER}}", "{{env.BUFFER_PROFILE_LINKEDIN}}"],
+          "since": "{{now - 24*3600}}"
+        }
+      },
+      {
+        "order": 3,
+        "module": "iterator:Iterate",
+        "name": "3. 각 게시물별로 반복",
+        "input": "{{2.updates}}"
+      },
+      {
+        "order": 4,
+        "module": "notion:SearchPages",
+        "name": "4. Buffer_ID로 Notion 페이지 찾기",
+        "params": {
+          "database_id": "<<NOTION_DB_ID>>",
+          "filter": {"Buffer_ID": "{{3.id}}"}
+        }
+      },
+      {
+        "order": 5,
+        "module": "notion:UpdatePage",
+        "name": "5. 성과 데이터 업데이트",
+        "params": {
+          "page_id": "{{4.id}}",
+          "properties": {
+            "상태": "발행됨",
+            "성과_좋아요": "{{3.statistics.likes}}",
+            "성과_도달": "{{3.statistics.reach}}",
+            "성과_업데이트": "{{now}}"
+          }
+        }
+      }
+    ]
+  }
+}

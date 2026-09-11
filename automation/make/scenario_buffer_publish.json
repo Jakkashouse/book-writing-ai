@@ -1,0 +1,100 @@
+{
+  "name": "작가의집 — Claude → Buffer 발행",
+  "description": "클로드에서 Webhook으로 콘텐츠 받아 Buffer 큐에 업로드 + Notion 백업 + Gmail 알림",
+  "scenario": {
+    "trigger": {
+      "module": "gateway:CustomWebHook",
+      "name": "1. 클로드 콘텐츠 수신",
+      "expected_payload": {
+        "topic": "string — 콘텐츠 주제",
+        "channel": "instagram | twitter | linkedin | facebook",
+        "caption": "string — 본문",
+        "hashtags": "string[] — 해시태그 배열",
+        "scheduled_at": "ISO8601 — 발행 예약 시각 (선택)",
+        "image_url": "string — 이미지 URL (선택)",
+        "source_book": "string — 어느 책 홍보인지 (메모용)"
+      }
+    },
+    "steps": [
+      {
+        "order": 2,
+        "module": "buffer:CreateUpdate",
+        "name": "2. Buffer 큐에 업로드",
+        "params": {
+          "profile_ids": "{{env.BUFFER_PROFILE_${1.channel | upper}}}",
+          "text": "{{1.caption}}\n\n{{join(1.hashtags; ' ')}}",
+          "scheduled_at": "{{1.scheduled_at}}",
+          "media_url": "{{1.image_url}}",
+          "shorten": false
+        }
+      },
+      {
+        "order": 3,
+        "module": "notion:CreatePage",
+        "name": "3. Notion DB에 백업",
+        "params": {
+          "database_id": "<<NOTION_DB_ID>>",
+          "properties": {
+            "주제": "{{1.topic}}",
+            "채널": "{{1.channel}}",
+            "본문": "{{1.caption}}",
+            "해시태그": "{{join(1.hashtags; ' ')}}",
+            "예약시각": "{{1.scheduled_at}}",
+            "원천도서": "{{1.source_book}}",
+            "상태": "예약완료",
+            "Buffer_ID": "{{2.id}}"
+          }
+        }
+      },
+      {
+        "order": 4,
+        "module": "gmail:SendEmail",
+        "name": "4. 사장님께 발행 예약 알림 (요약)",
+        "filter": "주 1회 월요일 오전 9시 다이제스트 모드",
+        "params": {
+          "to": "joyfuljun4@gmail.com",
+          "subject": "[작가의집 자동발행] {{1.source_book}} — {{1.channel}} 예약 완료",
+          "body": "주제: {{1.topic}}\n채널: {{1.channel}}\n예약시각: {{1.scheduled_at}}\nBuffer 큐 확인: https://publish.buffer.com/queue"
+        }
+      },
+      {
+        "order": 5,
+        "module": "webhook:Response",
+        "name": "5. 클로드에 성공 응답",
+        "params": {
+          "status": 200,
+          "body": {
+            "ok": true,
+            "buffer_id": "{{2.id}}",
+            "notion_page_id": "{{3.id}}"
+          }
+        }
+      }
+    ]
+  },
+  "setup_steps": [
+    "1. Make.com 가입 → Core plan 결제 ($9/월)",
+    "2. New Scenario → Webhook(Custom) 모듈 추가 → URL 복사 → .env의 MAKE_WEBHOOK_URL에 붙여넣기",
+    "3. Buffer 모듈 연결 → OAuth 인증 (Buffer 로그인 1회)",
+    "4. Notion 모듈 연결 → '작가의집_SNS발행로그' DB 생성 후 ID 복사",
+    "5. Gmail 모듈 연결 → joyfuljun4@gmail.com OAuth",
+    "6. 시나리오 저장 → Activate 토글 ON",
+    "7. 테스트: scripts/test_make_webhook.py 실행"
+  ],
+  "notion_db_schema": {
+    "name": "작가의집_SNS발행로그",
+    "properties": {
+      "주제": "Title",
+      "채널": "Select (instagram/twitter/linkedin/facebook)",
+      "본문": "Rich text",
+      "해시태그": "Rich text",
+      "예약시각": "Date",
+      "원천도서": "Select",
+      "상태": "Select (예약완료/발행됨/실패/검수대기)",
+      "Buffer_ID": "Rich text",
+      "성과_좋아요": "Number (insight-analyzer가 채움)",
+      "성과_도달": "Number (insight-analyzer가 채움)",
+      "성과_업데이트": "Date (insight-analyzer가 채움)"
+    }
+  }
+}

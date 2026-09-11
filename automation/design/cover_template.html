@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>{{BOOK_TITLE}} 표지 시안</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+  /* 신국판 152 × 225 mm @ 300dpi */
+  @page { size: 152mm 225mm; margin: 0; }
+  body { margin: 0; font-family: 'Noto Sans KR', sans-serif; }
+
+  .cover {
+    width: 152mm;
+    height: 225mm;
+    background: {{COVER_BG}};
+    color: {{COVER_FG}};
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20mm 15mm;
+    box-sizing: border-box;
+    page-break-after: always;
+  }
+
+  .top-label {
+    font-size: 12pt;
+    letter-spacing: 4px;
+    opacity: 0.8;
+  }
+
+  .title-block {
+    margin-top: 20mm;
+  }
+
+  .title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 42pt;
+    font-weight: 900;
+    line-height: 1.2;
+    margin: 0;
+    color: {{ACCENT_COLOR}};
+  }
+
+  .subtitle {
+    font-size: 14pt;
+    line-height: 1.5;
+    margin-top: 12mm;
+    opacity: 0.9;
+  }
+
+  .author-block {
+    border-top: 1px solid currentColor;
+    padding-top: 8mm;
+    font-size: 11pt;
+  }
+
+  .publisher {
+    font-size: 10pt;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="top-label">{{GENRE_LABEL}}</div>
+  <div class="title-block">
+    <h1 class="title">{{BOOK_TITLE}}</h1>
+    <p class="subtitle">{{SUBTITLE}}</p>
+  </div>
+  <div class="author-block">
+    <div>{{AUTHOR_NAME}} 지음</div>
+    <div class="publisher" style="margin-top: 4mm;">작가의집</div>
+  </div>
+</div>
+
+</body>
+</html>
