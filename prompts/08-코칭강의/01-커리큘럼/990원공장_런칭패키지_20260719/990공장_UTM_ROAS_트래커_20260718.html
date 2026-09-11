@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>990원 공장 런칭 · UTM & ROAS 트래커</title>
+<style>
+  :root{--navy:#1a3a5c;--gold:#c8924a;--cream:#faf6ee;--ok:#2f7d4f;--warn:#b5532a;--ink:#222}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Malgun Gothic','맑은 고딕','Noto Sans KR',sans-serif;background:var(--cream);color:var(--ink);line-height:1.55}
+  header{background:var(--navy);color:#fff;padding:22px 20px}
+  header h1{font-size:21px}header p{color:#cdd8e5;font-size:13px;margin-top:4px}
+  .wrap{max-width:1000px;margin:0 auto;padding:22px 18px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid #ece3d3;border-radius:12px;padding:18px 20px}
+  .card h2{font-size:16px;color:var(--navy);margin-bottom:12px;border-bottom:2px solid var(--gold);padding-bottom:6px}
+  label{display:block;font-size:13px;color:#555;margin:9px 0 3px}
+  input,select{width:100%;padding:8px 10px;border:1px solid #cdd3da;border-radius:7px;font-size:14px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .out{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .metric{background:var(--cream);border-radius:9px;padding:11px 12px;text-align:center}
+  .metric .v{font-size:22px;font-weight:800;color:var(--navy)}
+  .metric .l{font-size:12px;color:#666;margin-top:2px}
+  .metric.hl .v{color:var(--gold)}
+  .goal{font-size:12px;color:#888;margin-top:3px}
+  .flag{font-weight:700}.flag.ok{color:var(--ok)}.flag.warn{color:var(--warn)}
+  .utm{margin-top:6px}
+  .utm code{display:block;background:#12283f;color:#e6edf5;padding:11px 13px;border-radius:8px;font-size:12.5px;word-break:break-all;margin-top:8px}
+  .btn{background:var(--gold);color:#1a1a1a;border:0;font-weight:700;padding:9px 16px;border-radius:8px;cursor:pointer;margin-top:10px}
+  .note{font-size:12px;color:#888;margin-top:14px;line-height:1.6}
+  .stage{font-size:13px;color:#555}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+  th,td{border:1px solid #e2d9c9;padding:6px 8px;text-align:center}th{background:#f4efe6;color:var(--navy)}
+</style>
+</head>
+<body>
+<header>
+  <h1>990원 공장 런칭 · UTM & ROAS 트래커</h1>
+  <p>라이브 7/30(목) · 값을 입력하면 자동 계산됩니다 · 매일 갱신 권장</p>
+</header>
+
+<div class="wrap">
+<div class="grid">
+
+  <!-- 광고 입력 -->
+  <div class="card">
+    <h2>① 광고 (모객)</h2>
+    <div class="row">
+      <div><label>총 광고비(원)</label><input type="number" id="spend" value="300000"></div>
+      <div><label>노출수</label><input type="number" id="imp" value="0"></div>
+    </div>
+    <div class="row">
+      <div><label>랜딩 클릭수</label><input type="number" id="clicks" value="0"></div>
+      <div><label>990 결제수(신규)</label><input type="number" id="pay990" value="0"></div>
+    </div>
+    <label>기존 400방 재활성 실참여</label><input type="number" id="react" value="0">
+    <div class="out">
+      <div class="metric"><div class="v" id="ctr">–</div><div class="l">랜딩 CTR</div></div>
+      <div class="metric hl"><div class="v" id="cpa">–</div><div class="l">990 CPA <span class="goal">목표 3~5천</span></div></div>
+    </div>
+    <div class="out">
+      <div class="metric"><div class="v" id="room">–</div><div class="l">방 총원 <span class="goal">목표 700~1000</span></div></div>
+      <div class="metric"><div class="v" id="rev990">–</div><div class="l">990 결제수입</div></div>
+    </div>
+  </div>
+
+  <!-- 라이브 입력 -->
+  <div class="card">
+    <h2>② 라이브 → 결제</h2>
+    <div class="row">
+      <div><label>라이브 신청수</label><input type="number" id="apply" value="0"></div>
+      <div><label>라이브 참석수</label><input type="number" id="attend" value="0"></div>
+    </div>
+    <div class="row">
+      <div><label>230만 결제수</label><input type="number" id="buy" value="0"></div>
+      <div><label>객단가(만원)</label><input type="number" id="price" value="230"></div>
+    </div>
+    <div class="out">
+      <div class="metric"><div class="v" id="showrate">–</div><div class="l">방→참석률 <span class="goal">목표 25~35%</span></div></div>
+      <div class="metric"><div class="v" id="cvr">–</div><div class="l">참석→결제 <span class="goal">벤치 10%</span></div></div>
+    </div>
+    <div class="out">
+      <div class="metric hl"><div class="v" id="rev">–</div><div class="l">매출</div></div>
+      <div class="metric hl"><div class="v" id="roas">–</div><div class="l">ROAS</div></div>
+    </div>
+    <p class="stage" id="verdict" style="margin-top:12px"></p>
+  </div>
+
+</div>
+
+<!-- 시나리오 대조 -->
+<div class="card" style="margin-top:18px">
+  <h2>③ 실측 vs 시나리오 대조</h2>
+  <table>
+    <tr><th>구간</th><th>보수</th><th>표준</th><th>낙관</th><th>실측</th></tr>
+    <tr><td>방 총원</td><td>500</td><td>700~800</td><td>1000+</td><td id="t_room">–</td></tr>
+    <tr><td>라이브 참석</td><td>200</td><td>250~300</td><td>350~400</td><td id="t_attend">–</td></tr>
+    <tr><td>결제수</td><td>20</td><td>25~30</td><td>35~40</td><td id="t_buy">–</td></tr>
+    <tr><td>매출</td><td>4,600만</td><td>5,750~6,900만</td><td>8,000~9,200만</td><td id="t_rev">–</td></tr>
+  </table>
+</div>
+
+<!-- UTM 빌더 -->
+<div class="card" style="margin-top:18px">
+  <h2>④ UTM 링크 빌더</h2>
+  <div class="row">
+    <div><label>랜딩 기본 URL</label><input type="text" id="base" value="https://[990랜딩URL]"></div>
+    <div><label>앵글(content)</label>
+      <select id="content"><option>A1_990심리</option><option>A2_재정의</option><option>A3_권위</option><option>A4_결과페이싱</option></select></div>
+  </div>
+  <div class="row">
+    <div><label>매체(source)</label>
+      <select id="source"><option>meta</option><option>instagram</option><option>kakao</option><option>organic</option></select></div>
+    <div><label>층(campaign)</label>
+      <select id="camp"><option>prospecting</option><option>retargeting</option><option>reactivation</option></select></div>
+  </div>
+  <button class="btn" onclick="buildUTM()">UTM 생성</button>
+  <div class="utm"><code id="utmout">여기에 생성된 링크가 표시됩니다</code></div>
+</div>
+
+<p class="note">
+  ⚠ 실측 게이트: Phase0 30만 집행 후 <b>990 CPA가 5천 초과</b>면 랜딩·소재부터 개선(예산 더 태우기 전).
+  방 총원 500 미만이면 재활성·리타기팅 강화. 방→참석률 25% 미만이면 리마인드 시퀀스 점검.<br>
+  모든 광고 수치는 우리 실데이터로만 이후 마케팅에 사용(외부 벤치마크는 설계 근거로만).
+</p>
+</div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  const won=n=>n.toLocaleString('ko-KR');
+  const man=n=>{ if(n>=10000) return (n/10000).toFixed(n%10000?1:0)+'억'; return won(Math.round(n))+'만'; };
+  function calc(){
+    const spend=+$('spend').value||0, imp=+$('imp').value||0, clicks=+$('clicks').value||0,
+      pay=+$('pay990').value||0, react=+$('react').value||0,
+      apply=+$('apply').value||0, attend=+$('attend').value||0, buy=+$('buy').value||0, price=+$('price').value||230;
+    // 광고
+    $('ctr').textContent = imp? (clicks/imp*100).toFixed(2)+'%':'–';
+    $('cpa').textContent = pay? won(Math.round(spend/pay))+'원':'–';
+    const room=pay+react;
+    $('room').textContent = room? won(room)+'명':'–';
+    $('rev990').textContent = won(pay*990)+'원';
+    // 라이브
+    $('showrate').textContent = room? (attend/room*100).toFixed(1)+'%':'–';
+    $('cvr').textContent = attend? (buy/attend*100).toFixed(1)+'%':'–';
+    const revMan=buy*price;
+    $('rev').textContent = buy? man(revMan):'–';
+    $('roas').textContent = spend? (revMan*10000/spend).toFixed(1)+'배':'–';
+    // 대조
+    $('t_room').textContent = room||'–';
+    $('t_attend').textContent = attend||'–';
+    $('t_buy').textContent = buy||'–';
+    $('t_rev').textContent = buy? man(revMan):'–';
+    // verdict
+    let v='';
+    if(pay){ const cpa=spend/pay;
+      v += cpa<=5000? '<span class="flag ok">✓ CPA 양호(≤5천) — 스케일 가능</span>' : '<span class="flag warn">⚠ CPA 초과(>5천) — 랜딩/소재 개선 먼저</span>'; }
+    if(room && attend){ const sr=attend/room;
+      v += ' &nbsp; '+(sr>=0.25? '<span class="flag ok">✓ 참석률 양호</span>':'<span class="flag warn">⚠ 참석률 낮음 — 리마인드 점검</span>'); }
+    $('verdict').innerHTML=v;
+  }
+  function buildUTM(){
+    const base=$('base').value.trim();
+    const p=new URLSearchParams({utm_source:$('source').value,utm_medium:'cpc',
+      utm_campaign:$('camp').value,utm_content:$('content').value});
+    $('utmout').textContent = base+(base.includes('?')?'&':'?')+p.toString();
+  }
+  document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',calc));
+  calc();
+</script>
+</body>
+</html>

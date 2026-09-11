@@ -32,6 +32,13 @@ Downloads/
 .debug/
 nul
 *.log
+.playwright-mcp/
+
+# 작업 중 캡처한 스크린샷·테스트 출력물 (산출물 아님)
+mobile-hero.png
+mokcha_current.png
+pay_check.png
+t_*.pdf
 
 # OS
 Thumbs.db
